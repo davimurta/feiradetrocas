@@ -1,0 +1,34 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next
+/out
+
+# production
+/build
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# prisma / db
+/prisma/*.db
+/prisma/*.db-journal
+
+# env — nunca commitar credenciais reais
+.env
+.env.local
+.env.*.local
+
+# testes / cobertura
+/coverage
+/.vitest
+/test-results
+/playwright-report
+/blob-report
+/.playwright
+
+# sistema
+.DS_Store
+*.log

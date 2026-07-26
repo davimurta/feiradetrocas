@@ -1,0 +1,50 @@
+{
+  "name": "feiradetrocas",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Sistema de economia de fichas da Feira de Trocas (Cotemig) — V2, backend-first",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "db:test:up": "docker compose -f docker-compose.test.yml up -d --wait",
+    "db:test:down": "docker compose -f docker-compose.test.yml down -v",
+    "db:seed": "node --env-file=.env prisma/seed.mjs",
+    "test": "vitest run --project unit --project components",
+    "test:unit": "vitest run --project unit",
+    "test:components": "vitest run --project components",
+    "test:integration": "vitest run --project integration",
+    "test:e2e": "vitest run --project e2e",
+    "test:all": "vitest run",
+    "test:ui": "playwright test",
+    "test:watch": "vitest --project unit --project components",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "@prisma/client": "^6.2.1",
+    "next": "^15.1.4",
+    "qrcode-generator": "^2.0.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^3.9.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.4",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "happy-dom": "^20.10.6",
+    "prisma": "^6.2.1",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.2"
+  }
+}

@@ -1,0 +1,21 @@
+# Postgres leve para rodar os testes de integração/e2e localmente e em CI.
+# Sobe com:  npm run db:test:up
+# Derruba:   npm run db:test:down
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: feira-test-pg
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: feira_test
+    ports:
+      - "5433:5432"
+    # tmpfs = dados só em memória: mais rápido e sem sujar o disco entre runs de teste.
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d feira_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 15

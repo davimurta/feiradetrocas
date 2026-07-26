@@ -1,0 +1,154 @@
+// Feira de Trocas — schema do domínio de economia de fichas (COTEMIG).
+//
+// Novidades desta fase:
+//  - Aprovação em duas pontas: a venda vira um `Pedido` com status `pendente` até o
+//    comprador aprovar (o atendente já "aprova" ao criar). Só quando os dois aceitam é que
+//    a venda é finalizada atomicamente (baixa de estoque + débito + auditoria).
+//  - Unidades Barroca/Floresta: `unidade` em User e Item. Estoque/stacking e as telas
+//    operacionais (recepção/stand/catálogo) são por unidade. A carteira (saldo) é global
+//    por aluno; o admin enxerga todas as unidades.
+//
+// Invariantes mantidas: fichas inteiras; toda mudança de saldo/estoque em transação atômica;
+// campos de lookup (email/carteira/código) únicos e indexados.
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" = sua máquina; "debian-openssl-3.0.x" = runtime Linux do Railway (Nixpacks).
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Papel {
+  participante
+  atendente_entrada
+  atendente_stand
+  admin
+}
+
+enum Unidade {
+  barroca
+  floresta
+}
+
+enum TipoTransacao {
+  credito_entrada
+  debito_compra
+  ajuste_manual
+}
+
+enum PedidoStatus {
+  pendente // criado pelo stand, aguardando o comprador aprovar
+  aprovado // os dois aceitaram; venda finalizada
+  recusado // comprador recusou (ou finalização inviável: esgotado/saldo)
+  cancelado // atendente cancelou antes da aprovação
+}
+
+model User {
+  id String @id @default(cuid())
+
+  nome      String
+  email     String  @unique
+  senhaHash String? @map("senha_hash")
+  provider  String  @default("password")
+
+  papel   Papel   @default(participante)
+  unidade Unidade @default(barroca)
+  saldo   Int     @default(0)
+  codigoCarteira String @unique @map("codigo_carteira")
+
+  /// Conta que entrou com email fora do padrão de matrícula: fica pendente até o admin
+  /// definir papel/unidade ("colocar uma rule"). Enquanto true, só vê a tela de pendência.
+  pendente Boolean @default(false)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  transacoes           Transacao[] @relation("TransacoesDoUsuario")
+  atendimentos         Transacao[] @relation("TransacoesDoAtendente")
+  pedidosComoComprador Pedido[]    @relation("PedidoComprador")
+  pedidosComoAtendente Pedido[]    @relation("PedidoAtendente")
+
+  @@map("users")
+}
+
+model Item {
+  id         String  @id @default(cuid())
+  codigo     String  @unique
+  nome       String
+  categoria  String
+  valor      Int
+  quantidade Int     @default(0)
+  unidade    Unidade @default(barroca)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  transacoes Transacao[]
+  pedidos    Pedido[]
+
+  // Stacking por unidade: um item por (nome, valor, unidade).
+  @@unique([nome, valor, unidade])
+  @@index([categoria, unidade])
+  @@map("items")
+}
+
+model Transacao {
+  id         String        @id @default(cuid())
+  tipo       TipoTransacao
+  valor      Int
+  quantidade Int           @default(1)
+
+  userId String @map("user_id")
+  user   User   @relation("TransacoesDoUsuario", fields: [userId], references: [id])
+
+  atendenteId String? @map("atendente_id")
+  atendente   User?   @relation("TransacoesDoAtendente", fields: [atendenteId], references: [id])
+
+  itemId String? @map("item_id")
+  item   Item?   @relation(fields: [itemId], references: [id])
+
+  pedido Pedido?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([itemId])
+  @@map("transacoes")
+}
+
+/// Pedido de compra que exige aprovação do comprador (status `pendente` até os dois aceitarem).
+model Pedido {
+  id         String       @id @default(cuid())
+  status     PedidoStatus @default(pendente)
+  valor      Int
+  quantidade Int          @default(1)
+
+  itemId String @map("item_id")
+  item   Item   @relation(fields: [itemId], references: [id])
+
+  compradorId String @map("comprador_id")
+  comprador   User   @relation("PedidoComprador", fields: [compradorId], references: [id])
+
+  atendenteId String @map("atendente_id")
+  atendente   User   @relation("PedidoAtendente", fields: [atendenteId], references: [id])
+
+  aprovadoComprador Boolean @default(false) @map("aprovado_comprador")
+  aprovadoAtendente Boolean @default(true) @map("aprovado_atendente")
+
+  // Transação gerada na finalização (quando aprovado).
+  transacaoId String?    @unique @map("transacao_id")
+  transacao   Transacao? @relation(fields: [transacaoId], references: [id])
+
+  motivoRecusa String? @map("motivo_recusa")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([compradorId, status])
+  @@index([status, createdAt])
+  @@map("pedidos")
+}
