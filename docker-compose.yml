@@ -40,13 +40,16 @@ services:
 
   # Serviço de uma tacada: aplica as migrations e sai. O app só sobe depois que ele
   # termina com sucesso — assim o schema nunca fica atrás do código.
+  #
+  # Roda o MESMO `/app/pre-deploy.sh` e a MESMA imagem (`runner`) que a plataforma de
+  # deploy usa no pre-deploy. Se quebrar em produção, quebra aqui primeiro.
   migrate:
     build:
       context: .
-      target: builder
+      target: runner
     restart: "no"
     environment: *banco
-    command: npx prisma migrate deploy
+    command: /app/pre-deploy.sh
     depends_on:
       db:
         condition: service_healthy

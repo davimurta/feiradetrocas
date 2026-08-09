@@ -59,11 +59,60 @@ Ele sobe, roda o script e some (`--rm`).
 | Ver os logs do app | `docker compose logs -f app` |
 | Parar (mantém os dados) | `docker compose down` |
 | Parar e **apagar o banco** | `docker compose down -v` |
+| Parar tudo, incluindo o `seed` | `docker compose --profile demo down` |
 | Estado dos serviços | `docker compose ps` |
 | Abrir o psql | `docker compose exec db psql -U postgres -d feira` |
 
 Os mesmos comandos existem como atalhos npm: `npm run docker:up`, `docker:demo`,
 `docker:down`, `docker:logs`, `docker:admin`.
+
+Detalhe do compose: `docker compose down` **não** remove o container do `seed`, porque ele
+está num profile. Para limpar tudo, use `docker compose --profile demo down`.
+
+## Deploy numa plataforma (Railway, Fly, Render)
+
+**Pre-Deploy Command — use exatamente isto:**
+
+```
+/app/pre-deploy.sh
+```
+
+Ele aplica as migrations pendentes usando a CLI do Prisma que **já vem dentro da imagem**,
+na versão exata do `package-lock.json`, com o caminho do schema explícito.
+
+**Não use `npx prisma migrate deploy` como pre-deploy.** Falha por três motivos, todos
+já vistos neste projeto:
+
+1. `npx` baixa a CLI da internet e pega a `latest` (hoje prisma@7) — major diferente das
+   migrations e do `@prisma/client` gerados aqui;
+2. `npx` grava cache no HOME e o container roda como o usuário não-root `feira`, o que
+   dá `npm error EACCES`;
+3. a CLI baixada roda a partir de um diretório temporário e não acha `prisma/schema.prisma`
+   (`Could not find Prisma Schema`).
+
+Rodar como root resolveria só o item 2 — os outros dois continuariam. Por isso a correção
+foi na imagem, não na permissão: o `runner` agora carrega `prisma/` (schema + migrations)
+e uma árvore isolada com a CLI em `/app/.prisma-cli`, e `CHECKPOINT_DISABLE=1` evita
+qualquer ida à rede durante o deploy. O container segue rodando como usuário não-root.
+
+Variáveis que a plataforma precisa ter:
+
+| Variável | Valor |
+|---|---|
+| `DATABASE_URL` | a URL do Postgres gerenciado da plataforma |
+| `SESSION_SECRET` | 32 bytes aleatórios (`openssl rand -hex 32`) |
+| `TZ_EVENTO` | `America/Sao_Paulo` (opcional) |
+
+Depois do primeiro deploy, crie o admin apontando para o banco de produção a partir da
+sua máquina:
+
+```bash
+env DATABASE_URL="<URL pública do Postgres>" node prisma/criar-admin.mjs admin@cotemig.com.br <senha>
+```
+
+O serviço `migrate` do `docker-compose.yml` roda **o mesmo script e a mesma imagem** que a
+plataforma usa. Se o pre-deploy for quebrar em produção, quebra num `docker compose up`
+local primeiro.
 
 ## O que está rodando
 

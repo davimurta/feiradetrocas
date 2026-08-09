@@ -31,6 +31,31 @@ ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 ENV SESSION_SECRET="build-only"
 RUN npm run build
 
+# -- CLI do Prisma isolada (para o pre-deploy da plataforma) -----------------
+# Árvore própria, num prefixo separado: copiar só `node_modules/prisma` do builder não
+# funciona (a CLI puxa dependências transitivas como `effect`), e despejar o
+# `node_modules` inteiro do builder no runtime jogaria fora o ganho do `standalone` e
+# poderia conflitar com as versões que o Next já empacotou.
+# A versão sai do package-lock.json — a mesma que gerou estas migrations, nunca a `latest`.
+FROM base AS prisma-cli
+WORKDIR /cli
+COPY package-lock.json ./
+RUN VERSAO="$(node -p "require('./package-lock.json').packages['node_modules/prisma'].version")" \
+  && echo "CLI do Prisma: ${VERSAO}" \
+  && npm init -y > /dev/null \
+  && npm install --no-audit --no-fund "prisma@${VERSAO}"
+
+# Poda o que `migrate deploy` não usa. Sem isto a CLI leva ~150 MB para dentro da imagem
+# de runtime: engines/wasm de MySQL, SQLite, SQL Server e CockroachDB, o query engine
+# (quem consulta é o @prisma/client do app, não a CLI) e o `typescript`, que só faria
+# falta com um `prisma.config.ts` — este projeto não tem.
+RUN cd /cli/node_modules \
+  && rm -rf typescript fast-check \
+  && rm -f @prisma/engines/libquery_engine-* prisma/libquery_engine-* \
+  && rm -f prisma/build/query_engine_bg.{mysql,sqlite,sqlserver,cockroachdb}.* \
+  && rm -f prisma/build/query_compiler_bg.{mysql,sqlite,sqlserver,cockroachdb}.* \
+  && du -sh /cli/node_modules
+
 # -- Runtime -----------------------------------------------------------------
 FROM base AS runner
 ENV NODE_ENV=production
@@ -46,7 +71,25 @@ COPY --from=builder --chown=feira:nodejs /app/public ./public
 COPY --from=builder --chown=feira:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=feira:nodejs /app/.next/static ./.next/static
 
+# Migrations DENTRO da imagem de runtime.
+#
+# Plataformas de deploy (Railway, Fly, Render) rodam o "pre-deploy command" dentro DESTA
+# imagem, não do builder. O output `standalone` do Next não traz nem a CLI do Prisma nem
+# a pasta `prisma/`, então `npx prisma migrate deploy` falhava duas vezes: baixava uma
+# CLI nova da internet (prisma@7, incompatível com estas migrations) e depois não achava
+# o schema. Copiando CLI + engines + schema do builder, o comando roda offline, na versão
+# exata do projeto, e sem npm no meio — o que também elimina o EACCES de `npx` tentando
+# escrever cache no HOME do usuário não-root.
+COPY --from=builder --chown=feira:nodejs /app/prisma ./prisma
+COPY --from=prisma-cli --chown=feira:nodejs /cli/node_modules ./.prisma-cli/node_modules
+COPY --chown=feira:nodejs pre-deploy.sh ./pre-deploy.sh
+RUN chmod +x /app/pre-deploy.sh
+
 ENV NPM_CONFIG_CACHE=/home/feira/.npm
+# Sem "check de versão nova" da CLI: é rede desnecessária no meio do deploy.
+ENV CHECKPOINT_DISABLE=1
+ENV PRISMA_HIDE_UPDATE_MESSAGE=1
+
 USER feira
 EXPOSE 3000
 
