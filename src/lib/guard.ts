@@ -6,6 +6,7 @@ export async function requireUser(...papeisPermitidos: Papel[]): Promise<AuthUse
   const user = await getCurrentUser();
   if (!user) redirect('/login');
 
+  if (user.bloqueado) redirect('/login');
   if (user.pendente) redirect('/pendente');
   if (papeisPermitidos.length > 0 && !papeisPermitidos.includes(user.papel)) {
     redirect(rotaInicial(user.papel));

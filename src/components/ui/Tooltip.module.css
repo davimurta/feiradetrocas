@@ -1,0 +1,76 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+.trigger {
+  background: var(--surface);
+  border: 1.5px solid var(--input-bd);
+  color: var(--muted);
+  border-radius: 9px;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+.trigger:hover,
+.trigger:focus-visible {
+  outline: none;
+  border-color: var(--green-soft);
+  color: var(--green);
+}
+.bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 60;
+  min-width: 190px;
+  max-width: 280px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 10px;
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+  pointer-events: none;
+}
+.down {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+.right {
+  left: auto;
+  right: 0;
+}
+.wrap:hover .bubble,
+.wrap:focus-within .bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.itemLabel {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 600;
+}
+.itemValue {
+  font-family: var(--f-mono);
+  font-size: 0.82rem;
+  color: #fff;
+  overflow-wrap: anywhere;
+}

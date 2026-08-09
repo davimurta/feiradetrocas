@@ -1,0 +1,123 @@
+.saldoCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 26px 28px;
+  box-shadow: var(--shadow-sm);
+}
+.rot {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+.valorLinha {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 10px;
+}
+.valor {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: clamp(3rem, 11vw, 4rem);
+  line-height: 1;
+  color: var(--green);
+  overflow-wrap: anywhere;
+}
+.un {
+  font-family: var(--f-mono);
+  color: var(--muted);
+  font-size: 1.25rem;
+}
+.acoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.sideBtn {
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--green);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.12s ease;
+}
+.sideBtn span {
+  color: var(--ink);
+}
+.sideBtn:hover {
+  border-color: var(--green-soft);
+}
+.tut {
+  font-size: 0.9rem;
+}
+.tut ol {
+  margin: 8px 0 0 18px;
+  padding: 0;
+}
+
+/* Modal QR */
+.qrModal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.qrHead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.qrTitle {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--ink);
+}
+.qrSub {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.qrFrame {
+  background: #fff;
+  border: 1px solid var(--card-bd);
+  border-radius: 12px;
+  padding: 16px;
+  line-height: 0;
+}
+.qrLabel {
+  font-family: var(--f-mono);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+.qrSaldo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bd);
+  border-radius: 10px;
+  padding: 10px 18px;
+}
+.qrSaldoValor {
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--green);
+}

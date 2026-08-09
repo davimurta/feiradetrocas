@@ -1,0 +1,61 @@
+.catalogo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+}
+.produto {
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.produto:hover {
+  border-color: var(--green-soft);
+  box-shadow: var(--shadow-sm);
+}
+.thumb {
+  background: var(--accent-bg);
+  border: 1px solid #e0edce;
+  border-radius: 10px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+.cat {
+  font-family: var(--f-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.nome {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin: 2px 0 6px;
+}
+.meta {
+  font-size: 0.86rem;
+  color: var(--ink-2);
+}
+.meta b {
+  font-family: var(--f-mono);
+  color: var(--green);
+  font-weight: 700;
+}
+.meta.estoque b {
+  color: var(--ink);
+}

@@ -1,0 +1,43 @@
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 16px 22px;
+  box-shadow: var(--shadow-sm);
+}
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.meta strong {
+  font-size: 1rem;
+  color: var(--ink);
+}
+.sub {
+  font-size: 0.82rem;
+}
+.amount {
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+.un {
+  font-size: 0.72em;
+}
+.credit {
+  color: var(--credit);
+}
+.debit {
+  color: var(--danger-fg);
+}

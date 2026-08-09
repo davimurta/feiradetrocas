@@ -1,6 +1,7 @@
 export type DomainErrorCode =
   | 'ITEM_INEXISTENTE'
   | 'ITEM_INDISPONIVEL' // sem estoque (quantidade 0)
+  | 'ITEM_NAO_PENDENTE' // item já foi colocado em produção
   | 'CARTEIRA_INEXISTENTE'
   | 'PARTICIPANTE_INEXISTENTE'
   | 'ALUNO_INEXISTENTE'
@@ -12,7 +13,8 @@ export type DomainErrorCode =
   | 'PEDIDO_INEXISTENTE'
   | 'PEDIDO_NAO_PENDENTE'
   | 'NAO_AUTENTICADO'
-  | 'NAO_AUTORIZADO';
+  | 'NAO_AUTORIZADO'
+  | 'CONTA_BLOQUEADA';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;

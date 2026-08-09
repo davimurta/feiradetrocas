@@ -1,9 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Fase 1: backend-first. Sem UI ainda — apenas Server Actions e domínio.
-  experimental: {
-    // Server Actions já são estáveis no App Router; nada extra necessário aqui.
-  },
+  // Empacota o servidor + só as dependências realmente usadas em `.next/standalone`.
+  // É o que deixa a imagem de runtime sem `node_modules` completo nem devDependencies.
+  output: 'standalone',
+
+  serverExternalPackages: ['exceljs'],
 };
 
 export default nextConfig;

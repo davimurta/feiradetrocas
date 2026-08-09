@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser, assertPapel } from '@/lib/auth';
 import { DomainError } from '@/lib/errors';
 import { criarPedido, cancelarPedido, type CriarPedidoResult } from '@/domain/pedido';
+import { criarReporte, type CriarReporteResult } from '@/domain/reporte';
 import {
   getCatalogo,
   buscarAlunoPorIdentificador,
@@ -19,8 +20,8 @@ import { ok, fail, type ActionResult } from './_result';
 const PAPEIS = [Papel.atendente_stand, Papel.admin] as const;
 
 const criarSchema = z.object({
-  itemId: z.string().min(1, 'Escolha um item do catálogo.'),
-  codigoCarteira: z.string().trim().min(1, 'Informe a carteira do comprador.'),
+  itemId: z.string().min(1, 'Escolha um item do catálogo.').max(60),
+  codigoCarteira: z.string().trim().min(1, 'Informe a carteira do comprador.').max(120),
 });
 
 export async function criarPedidoAction(
@@ -78,7 +79,26 @@ export async function cancelarPedidoAction(
   }
 }
 
-const buscaSchema = z.object({ busca: z.string().trim().optional() });
+const reportarSchema = z.object({
+  pedidoId: z.string().min(1),
+  motivo: z.string().trim().min(1, 'Informe o motivo.').max(80),
+  descricao: z.string().trim().max(500).optional(),
+});
+
+export async function reportarAction(
+  input: z.input<typeof reportarSchema>,
+): Promise<ActionResult<CriarReporteResult>> {
+  try {
+    const user = await getCurrentUser();
+    const atendente = assertPapel(user, ...PAPEIS);
+    const { pedidoId, motivo, descricao } = reportarSchema.parse(input);
+    return ok(await criarReporte(prisma, { pedidoId, reportanteId: atendente.id, motivo, descricao }));
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+const buscaSchema = z.object({ busca: z.string().trim().max(80).optional() });
 
 export async function buscarCatalogoStandAction(
   input: z.input<typeof buscaSchema>,
@@ -93,7 +113,7 @@ export async function buscarCatalogoStandAction(
   }
 }
 
-const carteiraSchema = z.object({ codigo: z.string().trim().min(1, 'Informe a carteira/matrícula.') });
+const carteiraSchema = z.object({ codigo: z.string().trim().min(1, 'Informe a carteira/matrícula.').max(120) });
 
 export async function buscarCompradorAction(
   input: z.input<typeof carteiraSchema>,

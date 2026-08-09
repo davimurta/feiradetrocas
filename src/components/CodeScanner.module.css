@@ -1,0 +1,20 @@
+.label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--green-text);
+}
+.frame {
+  background: #fff;
+  padding: 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--card-bd);
+  line-height: 0;
+  margin-top: 8px;
+}
+.video {
+  width: 100%;
+  border-radius: 8px;
+}
+.camError {
+  font-size: 0.85rem;
+}

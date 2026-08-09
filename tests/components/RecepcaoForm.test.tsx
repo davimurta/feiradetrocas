@@ -11,12 +11,16 @@ const semAluno = vi.fn(async (): Promise<ActionResult<null>> => ({ ok: true, dat
 
 function sucesso(over: Partial<ReceberItemActionResult> = {}): ReceberItemActionResult {
   return {
-    item: { id: 'i1', codigo: 'ITM-AAAA1111', nome: 'Livro', categoria: 'Livros', valor: 10, quantidade: 1 },
-    creditado: 10,
-    saldoAtual: 10,
-    transacaoId: 't1',
-    novo: true,
+    id: 'p1',
+    codigo: 'ITM-AAAA1111',
+    nome: 'Livro',
+    categoria: 'Livros',
+    valor: 10,
+    quantidade: 1,
+    unidade: 'barroca',
+    descricao: null,
     alunoNome: 'Ana',
+    alunoMatricula: '20240099',
     alunoCriado: false,
     ...over,
   };
@@ -29,13 +33,27 @@ describe('RecepcaoForm (recepção)', () => {
 
     render(<RecepcaoForm unidadePadrao="barroca" receber={receber} buscarItens={semItens} buscarAluno={semAluno} />);
 
-    await user.type(screen.getByLabelText('Matrícula do aluno:'), '20240099');
-    await user.type(screen.getByLabelText('Nome do item:'), 'Livro');
-    await user.type(screen.getByLabelText('Valor do Item:'), '10');
+    await user.type(screen.getByLabelText('Matrícula do aluno'), '20240099');
+    await user.type(screen.getByLabelText('Nome do item'), 'Livro');
+    await user.type(screen.getByLabelText('Valor (fichas)'), '10');
     await user.click(screen.getByRole('button', { name: 'Cadastrar' }));
 
     expect(receber).toHaveBeenCalledWith({ matricula: '20240099', nome: 'Livro', categoria: 'Livros', valor: 10, unidade: 'barroca' });
-    expect(await screen.findByRole('status')).toHaveTextContent(/Creditado/);
+    expect(await screen.findByRole('status')).toHaveTextContent(/aguardando produção/);
+  });
+
+  it('envia a descrição preenchida para a action', async () => {
+    const user = userEvent.setup();
+    const receber = vi.fn(async (): Promise<ActionResult<ReceberItemActionResult>> => ({ ok: true, data: sucesso() }));
+
+    render(<RecepcaoForm unidadePadrao="barroca" receber={receber} buscarItens={semItens} buscarAluno={semAluno} />);
+    await user.type(screen.getByLabelText('Matrícula do aluno'), '20240099');
+    await user.type(screen.getByLabelText('Nome do item'), 'Livro');
+    await user.type(screen.getByLabelText('Valor (fichas)'), '10');
+    await user.type(screen.getByLabelText('Descrição (opcional)'), 'capa dura, seminovo');
+    await user.click(screen.getByRole('button', { name: 'Cadastrar' }));
+
+    expect(receber).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'capa dura, seminovo' }));
   });
 
   it('mostra mensagem específica quando a action retorna DomainError', async () => {
@@ -45,9 +63,9 @@ describe('RecepcaoForm (recepção)', () => {
     );
 
     render(<RecepcaoForm unidadePadrao="barroca" receber={receber} buscarItens={semItens} buscarAluno={semAluno} />);
-    await user.type(screen.getByLabelText('Matrícula do aluno:'), '20240099');
-    await user.type(screen.getByLabelText('Nome do item:'), 'Livro');
-    await user.type(screen.getByLabelText('Valor do Item:'), '10');
+    await user.type(screen.getByLabelText('Matrícula do aluno'), '20240099');
+    await user.type(screen.getByLabelText('Nome do item'), 'Livro');
+    await user.type(screen.getByLabelText('Valor (fichas)'), '10');
     await user.click(screen.getByRole('button', { name: 'Cadastrar' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/Valor inválido/i);
@@ -57,8 +75,8 @@ describe('RecepcaoForm (recepção)', () => {
     const user = userEvent.setup();
     const receber = vi.fn();
     render(<RecepcaoForm unidadePadrao="barroca" receber={receber} buscarItens={semItens} buscarAluno={semAluno} />);
-    await user.type(screen.getByLabelText('Nome do item:'), 'Livro');
-    await user.type(screen.getByLabelText('Valor do Item:'), '10');
+    await user.type(screen.getByLabelText('Nome do item'), 'Livro');
+    await user.type(screen.getByLabelText('Valor (fichas)'), '10');
     await user.click(screen.getByRole('button', { name: 'Cadastrar' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/matrícula/i);
     expect(receber).not.toHaveBeenCalled();
@@ -74,11 +92,11 @@ describe('RecepcaoForm (recepção)', () => {
     );
     render(<RecepcaoForm unidadePadrao="barroca" receber={vi.fn()} buscarItens={buscarItens} buscarAluno={semAluno} />);
 
-    await user.type(screen.getByLabelText('Nome do item:'), 'Cami');
+    await user.type(screen.getByLabelText('Nome do item'), 'Cami');
     const sugestao = await screen.findByRole('button', { name: /Camiseta/ });
     await user.click(sugestao);
 
-    expect(screen.getByLabelText('Valor do Item:')).toHaveValue(7);
-    expect(screen.getByLabelText('Categoria:')).toHaveValue('Roupas');
+    expect(screen.getByLabelText('Valor (fichas)')).toHaveValue(7);
+    expect(screen.getByLabelText('Categoria')).toHaveValue('Roupas');
   });
 });

@@ -1,0 +1,109 @@
+.row {
+  background: var(--surface);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 24px 26px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px 16px;
+  align-items: flex-end;
+  max-width: 100%;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.row:hover {
+  border-color: var(--green-soft);
+}
+.row > * {
+  min-width: 0;
+}
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.caption {
+  font-size: 0.66rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+.span2 {
+  grid-column: span 2;
+}
+.full {
+  grid-column: 1 / -1;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+}
+.ro {
+  font-family: var(--f-mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+  padding: 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wrap {
+  white-space: normal;
+}
+.strong {
+  color: var(--ink);
+}
+.control {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-bd);
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  font-family: var(--f-body);
+  color: var(--ink);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.control:focus-visible {
+  outline: none;
+  border-color: var(--green-soft);
+  box-shadow: var(--ring);
+}
+.control:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.control[type='number']::-webkit-outer-spin-button,
+.control[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.control[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 36px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%2368705c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+}
+.mono {
+  font-family: var(--f-mono);
+}
+.textarea {
+  min-height: 60px;
+  max-height: 160px;
+  resize: vertical;
+  line-height: 1.4;
+}

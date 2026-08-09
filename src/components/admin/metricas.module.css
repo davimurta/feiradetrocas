@@ -1,0 +1,238 @@
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.campoCurto {
+  max-width: 190px;
+}
+.campoData {
+  max-width: 200px;
+}
+.acoes {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.menuCsv {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.menuCsv > summary {
+  cursor: pointer;
+  padding: 2px 0;
+}
+.linksCsv {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  padding: 8px 2px 0;
+}
+.linksCsv a {
+  color: var(--green-text);
+  text-decoration: underline;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (min-width: 720px) {
+  .kpis {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1080px) {
+  .kpis {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+.kpi {
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--shadow-sm);
+}
+.kpiValor {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--green);
+}
+.kpiRotulo {
+  font-size: 0.63rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.kpiNota {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.grade {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .largo {
+    grid-column: 1 / -1;
+  }
+}
+
+.cartao {
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 16px 18px 12px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.cartaoTopo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.titulo {
+  font-family: var(--f-display);
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.subtitulo {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.destaque {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.plot {
+  width: 100%;
+  min-width: 0;
+}
+.vazio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.tabelaToggle {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.tabelaToggle > summary {
+  cursor: pointer;
+  padding: 4px 0;
+  list-style: revert;
+}
+.tabelaRolagem {
+  overflow-x: auto;
+  max-height: 260px;
+}
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.tabela th,
+.tabela td {
+  text-align: left;
+  padding: 5px 10px 5px 0;
+  border-bottom: 1px solid var(--card-bd);
+  white-space: nowrap;
+}
+.tabela th {
+  color: var(--muted);
+  font-weight: 600;
+}
+.tabela td:not(:first-child) {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tooltip próprio: o padrão do Recharts não usa os tokens do projeto. */
+.dica {
+  background: var(--surface);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+.dicaTitulo {
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.dicaLinha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2);
+}
+.dicaMarca {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+.dicaValor {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  padding-left: 12px;
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  padding: 2px 0 6px;
+}
+.legendaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dim {
+  opacity: 0.55;
+  transition: opacity 120ms ease;
+}

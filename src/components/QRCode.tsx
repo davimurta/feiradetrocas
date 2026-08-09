@@ -22,7 +22,7 @@ export function QRCode({ value, size = 220 }: { value: string; size?: number }) 
       role="img"
       aria-label={`QR code ${value}`}
     >
-      <path d={d} fill="var(--ink-900)" />
+      <path d={d} fill="#20261a" />
     </svg>
   );
 }

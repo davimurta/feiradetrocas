@@ -6,16 +6,21 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser, assertPapel } from '@/lib/auth';
 import { DomainError } from '@/lib/errors';
 import { ajustarSaldo } from '@/domain/admin';
+import { definirBloqueio } from '@/domain/reporte';
 import {
   listarItensAdmin,
   listarUsuariosAdmin,
-  getAdminDashboard,
   getTransacoesRecentes,
+  listarReportes,
+  getAlertasCatalogo,
   type ItemAdmin,
   type UsuarioAdmin,
-  type AdminDashboard,
   type TransacaoRecente,
+  type ReporteView,
+  type AlertaDiscrepanciaView,
 } from '@/server/queries';
+import { getMetricas, type MetricasView } from '@/server/metricas';
+import { filtroMetricasSchema, resolverFiltro } from '@/lib/filtroMetricas';
 import { ok, fail, type ActionResult } from './_result';
 
 async function exigirAdmin() {
@@ -24,22 +29,21 @@ async function exigirAdmin() {
 }
 
 const buscaSchema = z.object({
-  busca: z.string().trim().optional(),
+  busca: z.string().trim().max(80).optional(),
   unidade: z.nativeEnum(Unidade).optional(),
 });
 
-/** Painel (métricas + gráficos + recentes), filtrável por unidade (undefined = ambas). */
-export async function dashboardAction(
-  input: { unidade?: Unidade } = {},
-): Promise<ActionResult<{ dashboard: AdminDashboard; recentes: TransacaoRecente[] }>> {
+export async function metricasAction(
+  input: z.input<typeof filtroMetricasSchema> = {},
+): Promise<ActionResult<{ metricas: MetricasView; recentes: TransacaoRecente[] }>> {
   try {
     await exigirAdmin();
-    const unidade = input.unidade;
-    const [dashboard, recentes] = await Promise.all([
-      getAdminDashboard(unidade),
-      getTransacoesRecentes(20, unidade),
+    const filtro = resolverFiltro(filtroMetricasSchema.parse(input));
+    const [metricas, recentes] = await Promise.all([
+      getMetricas(filtro),
+      getTransacoesRecentes(20, filtro.unidade),
     ]);
-    return ok({ dashboard, recentes });
+    return ok({ metricas, recentes });
   } catch (err) {
     return fail(err);
   }
@@ -57,12 +61,22 @@ export async function listarItensAction(
   }
 }
 
+export async function alertasCatalogoAction(): Promise<ActionResult<AlertaDiscrepanciaView[]>> {
+  try {
+    await exigirAdmin();
+    return ok(await getAlertasCatalogo());
+  } catch (err) {
+    return fail(err);
+  }
+}
+
 const editarItemSchema = z.object({
   id: z.string().min(1),
   nome: z.string().trim().min(1, 'Nome obrigatório.').max(120),
   categoria: z.string().trim().min(1, 'Categoria obrigatória.').max(60),
   valor: z.number().int().positive('Valor deve ser positivo.'),
   quantidade: z.number().int().min(0, 'Quantidade não pode ser negativa.'),
+  descricao: z.string().trim().max(500).optional(),
   unidade: z.nativeEnum(Unidade),
 });
 
@@ -71,11 +85,11 @@ export async function editarItemAction(
 ): Promise<ActionResult<ItemAdmin>> {
   try {
     await exigirAdmin();
-    const { id, ...dados } = editarItemSchema.parse(input);
+    const { id, descricao, ...dados } = editarItemSchema.parse(input);
     const item = await prisma.item.update({
       where: { id },
-      data: dados,
-      select: { id: true, codigo: true, nome: true, categoria: true, valor: true, quantidade: true, unidade: true },
+      data: { ...dados, descricao: descricao ?? null },
+      select: { id: true, codigo: true, nome: true, categoria: true, valor: true, quantidade: true, unidade: true, descricao: true },
     });
     return ok(item);
   } catch (err) {
@@ -135,6 +149,29 @@ export async function editarUsuarioAction(
       select: { id: true, nome: true, email: true, papel: true, unidade: true, saldo: true, codigoCarteira: true, pendente: true },
     });
     return ok(user);
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function listarReportesAction(): Promise<ActionResult<ReporteView[]>> {
+  try {
+    await exigirAdmin();
+    return ok(await listarReportes());
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+const bloquearSchema = z.object({ id: z.string().min(1), bloqueado: z.boolean() });
+
+export async function bloquearContaAction(
+  input: z.input<typeof bloquearSchema>,
+): Promise<ActionResult<{ id: string; bloqueado: boolean }>> {
+  try {
+    await exigirAdmin();
+    const { id, bloqueado } = bloquearSchema.parse(input);
+    return ok(await definirBloqueio(prisma, { userId: id, bloqueado }));
   } catch (err) {
     return fail(err);
   }

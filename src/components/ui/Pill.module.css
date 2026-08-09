@@ -1,0 +1,14 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bd);
+  border-radius: 999px;
+  padding: 2px 9px;
+  color: var(--green);
+}

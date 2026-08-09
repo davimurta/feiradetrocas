@@ -1,0 +1,61 @@
+.painel {
+  padding: 20px 22px;
+}
+.painelTitulo {
+  color: var(--green-text);
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+}
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+.full {
+  grid-column: 1 / -1;
+}
+.autocomplete {
+  position: relative;
+}
+.suggestions {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.suggestions button {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: none;
+  border-bottom: 1px solid var(--input-bd);
+  padding: 10px 12px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+}
+.suggestions button:last-child {
+  border-bottom: none;
+}
+.suggestions button:hover {
+  background: var(--input-bg);
+}
+.suggestions .v {
+  font-family: var(--f-mono);
+  color: var(--green);
+  font-weight: 700;
+}

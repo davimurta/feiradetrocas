@@ -11,6 +11,7 @@ export interface AuthUser {
   email: string;
   unidade: Unidade;
   pendente: boolean;
+  bloqueado: boolean;
 }
 
 let overrideUserId: string | null = null;
@@ -24,13 +25,16 @@ export async function getCurrentUser(db: PrismaClient = prisma): Promise<AuthUse
   if (!userId) return null;
   return db.user.findUnique({
     where: { id: userId },
-    select: { id: true, papel: true, nome: true, email: true, unidade: true, pendente: true },
+    select: { id: true, papel: true, nome: true, email: true, unidade: true, pendente: true, bloqueado: true },
   });
 }
 
 export function assertPapel(user: AuthUser | null, ...papeisPermitidos: Papel[]): AuthUser {
   if (!user) {
     throw new DomainError('NAO_AUTENTICADO', 'Nenhum usuário autenticado.');
+  }
+  if (user.bloqueado) {
+    throw new DomainError('CONTA_BLOQUEADA', 'Conta bloqueada.');
   }
   if (!papeisPermitidos.includes(user.papel)) {
     throw new DomainError(

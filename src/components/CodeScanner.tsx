@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Camera, X } from '@phosphor-icons/react/dist/ssr';
+import { cx } from '@/lib/cx';
+import { Button } from '@/components/ui';
+import fieldStyles from '@/components/ui/Field.module.css';
+import styles from './CodeScanner.module.css';
 
 export function CodeScanner({
   label,
@@ -87,11 +91,11 @@ export function CodeScanner({
   }
 
   return (
-    <form className="field" onSubmit={submit}>
-      <label>{label}</label>
+    <form className="stack-sm" onSubmit={submit}>
+      <label className={styles.label}>{label}</label>
       <div className="row">
         <input
-          className="input mono grow"
+          className={cx(fieldStyles.input, fieldStyles.mono, 'grow')}
           value={value}
           placeholder={placeholder}
           onChange={(e) => setValue(e.target.value.toUpperCase())}
@@ -104,28 +108,27 @@ export function CodeScanner({
           aria-label={label}
         />
         {canScan && (
-          <button
-            type="button"
-            className="btn btn--ghost"
+          <Button
+            variant="ghost"
             onClick={() => (scanning ? stopCamera() : startCamera())}
             aria-label={scanning ? 'Parar câmera' : 'Escanear com a câmera'}
             title="Escanear com a câmera"
           >
             {scanning ? <X size={20} weight="bold" /> : <Camera size={20} weight="bold" />}
-          </button>
+          </Button>
         )}
-        <button type="submit" className="btn btn--primary" disabled={busy || !value.trim()}>
+        <Button type="submit" variant="primary" disabled={busy || !value.trim()}>
           {busy ? '…' : submitLabel}
-        </button>
+        </Button>
       </div>
 
       {scanning && (
-        <div className="qr-frame" style={{ padding: 8, marginTop: 8 }}>
+        <div className={styles.frame}>
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          <video ref={videoRef} playsInline muted style={{ width: '100%', borderRadius: 8 }} />
+          <video ref={videoRef} playsInline muted className={styles.video} />
         </div>
       )}
-      {camError && <p className="muted" style={{ fontSize: '0.85rem' }}>{camError}</p>}
+      {camError && <p className={cx('muted', styles.camError)}>{camError}</p>}
     </form>
   );
 }

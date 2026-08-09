@@ -1,0 +1,66 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+.btn {
+  flex: 1;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #fff;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  letter-spacing: 0.01em;
+  transition: filter 0.12s ease;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn:not(:disabled):active {
+  filter: brightness(0.92);
+}
+.aceitar {
+  background: var(--green);
+}
+.recusar {
+  background: var(--danger-fg);
+}
+.info {
+  flex: 0 0 auto;
+  background: var(--surface);
+  border-top: 1px solid var(--card-bd);
+  border-bottom: 1px solid var(--card-bd);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.item {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  color: var(--ink);
+}
+.valor {
+  font-family: var(--f-mono);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--danger-fg);
+}
+.desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  max-width: 520px;
+}

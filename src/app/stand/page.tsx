@@ -7,8 +7,10 @@ import {
   cancelarPedidoAction,
   buscarCatalogoStandAction,
   buscarCompradorAction,
+  reportarAction,
 } from '@/app/actions/venda';
 import { StandVenda } from '@/components/stand/StandVenda';
+import styles from './page.module.css';
 
 export default async function StandPage() {
   const user = await requireUser(Papel.atendente_stand, Papel.admin);
@@ -18,7 +20,7 @@ export default async function StandPage() {
     <main className="screen stack">
       <div className="row-between">
         <h1 className="page-title">Stand · Caixa</h1>
-        <span className="unidade-tag">Unidade {user.unidade}</span>
+        <span className={styles.unidadeTag}>Unidade {user.unidade}</span>
       </div>
       <StandVenda
         initial={itens}
@@ -27,6 +29,7 @@ export default async function StandPage() {
         criarPedido={criarPedidoAction}
         consultarPedido={consultarPedidoAction}
         cancelarPedido={cancelarPedidoAction}
+        reportar={reportarAction}
       />
     </main>
   );

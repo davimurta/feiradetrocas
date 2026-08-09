@@ -36,12 +36,12 @@ test('stand cria pedido → comprador aprova → saldo debita (unidade Floresta)
   await stand.getByRole('button', { name: /Enviar para aprovação/ }).click();
   await expect(stand.getByRole('heading', { name: 'Aguardando aprovação' })).toBeVisible();
 
-  // 2) Bruno aprova na carteira dele.
+  // 2) Bruno aprova na carteira dele — tela cheia de aprovação (Aceitar/Recusar).
   await login(buyer, '20240002@aluno.cotemig.com.br', 'aluno123');
-  await expect(buyer.getByRole('heading', { name: 'Compras aguardando você' })).toBeVisible();
+  await expect(buyer.getByRole('dialog', { name: /Aprovar compra/ })).toBeVisible();
   await expect(buyer.getByText('Fone de ouvido')).toBeVisible();
-  await buyer.getByRole('button', { name: /Aprovar/ }).click();
-  await expect(buyer.locator('.saldo-card .valor')).toHaveText('45'); // 50 - 5
+  await buyer.getByRole('button', { name: /Aceitar/ }).click();
+  await expect(buyer.getByTestId('saldo-valor')).toHaveText('45'); // 50 - 5
 
   // 3) O stand (polling) reflete a aprovação.
   await expect(stand.getByRole('heading', { name: 'Venda aprovada' })).toBeVisible({ timeout: 8000 });

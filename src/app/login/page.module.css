@@ -1,0 +1,48 @@
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+.topbar {
+  background: var(--green-header);
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+}
+.center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px 80px;
+}
+.panel {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.head {
+  text-align: center;
+}
+.title {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 2.4rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.sub {
+  color: var(--muted);
+  margin-top: 8px;
+  font-size: 1rem;
+}
+.blocked {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

@@ -1,0 +1,5 @@
+.logo {
+  height: clamp(38px, 6vw, 54px);
+  width: auto;
+  display: block;
+}

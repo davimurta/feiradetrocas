@@ -31,6 +31,18 @@ export function makeMockDb() {
       update: vi.fn(),
       updateMany: vi.fn(),
     },
+    itemPendente: {
+      findUnique: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
+      findMany: vi.fn(),
+    },
+    reporte: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+    },
   };
 
   const db = {

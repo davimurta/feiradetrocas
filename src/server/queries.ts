@@ -1,7 +1,8 @@
+import { cache } from 'react';
 import type { Papel, Unidade } from '@prisma/client';
-import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { normalizarIdentificador } from '@/domain/auth';
+import { avaliarItem, type ItemAvaliavel, type MotivoAlerta } from '@/lib/alertas/discrepancia';
 
 export interface CarteiraView {
   id: string;
@@ -79,12 +80,59 @@ export function buscarAlunoPorIdentificador(identificador: string): Promise<Alun
   });
 }
 
+export interface ItemPendenteView {
+  id: string;
+  codigo: string;
+  nome: string;
+  categoria: string;
+  valor: number;
+  quantidade: number;
+  unidade: Unidade;
+  descricao: string | null;
+  alunoNome: string;
+  alunoMatricula: string;
+  createdAt: Date;
+}
+
+export async function listarItensPendentes(unidade?: Unidade): Promise<ItemPendenteView[]> {
+  const linhas = await prisma.itemPendente.findMany({
+    where: { status: 'pendente', ...(unidade ? { unidade } : {}) },
+    orderBy: { createdAt: 'asc' },
+    select: {
+      id: true,
+      codigo: true,
+      nome: true,
+      categoria: true,
+      valor: true,
+      quantidade: true,
+      unidade: true,
+      descricao: true,
+      createdAt: true,
+      aluno: { select: { nome: true, codigoCarteira: true } },
+    },
+  });
+  return linhas.map((p) => ({
+    id: p.id,
+    codigo: p.codigo,
+    nome: p.nome,
+    categoria: p.categoria,
+    valor: p.valor,
+    quantidade: p.quantidade,
+    unidade: p.unidade,
+    descricao: p.descricao,
+    alunoNome: p.aluno.nome,
+    alunoMatricula: p.aluno.codigoCarteira,
+    createdAt: p.createdAt,
+  }));
+}
+
 export interface PedidoPendenteView {
   id: string;
   itemNome: string;
   valor: number;
   atendenteNome: string;
   unidade: Unidade;
+  descricao: string | null;
   createdAt: Date;
 }
 
@@ -96,7 +144,7 @@ export async function getPedidosPendentesDoComprador(compradorId: string): Promi
       id: true,
       valor: true,
       createdAt: true,
-      item: { select: { nome: true, unidade: true } },
+      item: { select: { nome: true, unidade: true, descricao: true } },
       atendente: { select: { nome: true } },
     },
   });
@@ -106,6 +154,7 @@ export async function getPedidosPendentesDoComprador(compradorId: string): Promi
     valor: p.valor,
     atendenteNome: p.atendente.nome,
     unidade: p.item.unidade,
+    descricao: p.item.descricao,
     createdAt: p.createdAt,
   }));
 }
@@ -152,116 +201,6 @@ export async function getHistorico(userId: string, limit = 100): Promise<Extrato
   }));
 }
 
-export interface AdminMetrics {
-  produtosDistintos: number;
-  itensDisponiveis: number; // soma do estoque
-  fichasEmCirculacao: number;
-  totalTransacoes: number;
-}
-
-export async function getAdminMetrics(): Promise<AdminMetrics> {
-  const [produtosDistintos, estoque, somaSaldo, totalTransacoes] = await Promise.all([
-    prisma.item.count(),
-    prisma.item.aggregate({ _sum: { quantidade: true } }),
-    prisma.user.aggregate({ _sum: { saldo: true } }),
-    prisma.transacao.count(),
-  ]);
-  return {
-    produtosDistintos,
-    itensDisponiveis: estoque._sum.quantidade ?? 0,
-    fichasEmCirculacao: somaSaldo._sum.saldo ?? 0,
-    totalTransacoes,
-  };
-}
-
-export interface AdminDashboard {
-  fichasEmCirculacao: number;
-  itensEmEstoque: number;
-  produtosDistintos: number;
-  totalTransacoes: number;
-  totalUsuarios: number;
-  totalAlunos: number;
-  volumeCreditos: number;
-  volumeDebitos: number;
-  itensPorCategoria: { label: string; value: number }[];
-  estoquePorUnidade: { label: string; value: number }[];
-  transacoesPorDia: { label: string; value: number }[];
-}
-
-export async function getAdminDashboard(unidade?: Unidade): Promise<AdminDashboard> {
-  // Filtros por unidade (undefined = ambas). Transações herdam a unidade do item.
-  const userWhere = unidade ? { unidade } : {};
-  const itemWhere = unidade ? { unidade } : {};
-  const transWhere = unidade ? { item: { unidade } } : {};
-
-  const [
-    somaSaldo,
-    estoque,
-    produtosDistintos,
-    totalTransacoes,
-    totalUsuarios,
-    totalAlunos,
-    porTipo,
-    porCategoria,
-    porUnidade,
-    porDiaRaw,
-  ] = await Promise.all([
-    prisma.user.aggregate({ _sum: { saldo: true }, where: userWhere }),
-    prisma.item.aggregate({ _sum: { quantidade: true }, where: itemWhere }),
-    prisma.item.count({ where: itemWhere }),
-    prisma.transacao.count({ where: transWhere }),
-    prisma.user.count({ where: userWhere }),
-    prisma.user.count({ where: { ...userWhere, papel: 'participante' } }),
-    prisma.transacao.groupBy({ by: ['tipo'], _sum: { valor: true }, where: transWhere }),
-    prisma.item.groupBy({ by: ['categoria'], _sum: { quantidade: true }, where: itemWhere }),
-    prisma.item.groupBy({ by: ['unidade'], _sum: { quantidade: true }, where: itemWhere }),
-    prisma.$queryRaw<{ dia: string; total: number }[]>(
-      unidade
-        ? Prisma.sql`
-            SELECT to_char(date_trunc('day', t.created_at), 'YYYY-MM-DD') AS dia, count(*)::int AS total
-            FROM transacoes t JOIN items i ON i.id = t.item_id
-            WHERE t.created_at >= now() - interval '6 days' AND i.unidade = ${unidade}::"Unidade"
-            GROUP BY 1 ORDER BY 1`
-        : Prisma.sql`
-            SELECT to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS dia, count(*)::int AS total
-            FROM transacoes
-            WHERE created_at >= now() - interval '6 days'
-            GROUP BY 1 ORDER BY 1`,
-    ),
-  ]);
-
-  const volume = (tipo: string) =>
-    porTipo.find((t) => t.tipo === tipo)?._sum.valor ?? 0;
-
-  const mapaDias = new Map(porDiaRaw.map((r) => [r.dia, r.total]));
-  const transacoesPorDia: { label: string; value: number }[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const iso = d.toISOString().slice(0, 10);
-    const label = `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
-    transacoesPorDia.push({ label, value: mapaDias.get(iso) ?? 0 });
-  }
-
-  return {
-    fichasEmCirculacao: somaSaldo._sum.saldo ?? 0,
-    itensEmEstoque: estoque._sum.quantidade ?? 0,
-    produtosDistintos,
-    totalTransacoes,
-    totalUsuarios,
-    totalAlunos,
-    volumeCreditos: volume('credito_entrada'),
-    volumeDebitos: Math.abs(volume('debito_compra')),
-    itensPorCategoria: porCategoria
-      .map((c) => ({ label: c.categoria, value: c._sum.quantidade ?? 0 }))
-      .sort((a, b) => b.value - a.value),
-    estoquePorUnidade: porUnidade
-      .map((u) => ({ label: u.unidade, value: u._sum.quantidade ?? 0 }))
-      .sort((a, b) => b.value - a.value),
-    transacoesPorDia,
-  };
-}
-
 export interface ItemAdmin {
   id: string;
   codigo: string;
@@ -270,6 +209,7 @@ export interface ItemAdmin {
   valor: number;
   quantidade: number;
   unidade: Unidade;
+  descricao: string | null;
 }
 
 export function listarItensAdmin(busca?: string, unidade?: Unidade): Promise<ItemAdmin[]> {
@@ -280,7 +220,7 @@ export function listarItensAdmin(busca?: string, unidade?: Unidade): Promise<Ite
       ...(q ? { OR: [{ nome: { contains: q, mode: 'insensitive' } }, { categoria: { contains: q, mode: 'insensitive' } }] } : {}),
     },
     orderBy: [{ unidade: 'asc' }, { nome: 'asc' }],
-    select: { id: true, codigo: true, nome: true, categoria: true, valor: true, quantidade: true, unidade: true },
+    select: { id: true, codigo: true, nome: true, categoria: true, valor: true, quantidade: true, unidade: true, descricao: true },
   });
 }
 
@@ -304,6 +244,132 @@ export function listarUsuariosAdmin(busca?: string, unidade?: Unidade): Promise<
     },
     orderBy: [{ pendente: 'desc' }, { papel: 'asc' }, { nome: 'asc' }],
     select: { id: true, nome: true, email: true, papel: true, unidade: true, saldo: true, codigoCarteira: true, pendente: true },
+  });
+}
+
+export interface ReporteView {
+  id: string;
+  motivo: string;
+  descricao: string | null;
+  createdAt: Date;
+  reportadoId: string;
+  reportadoNome: string;
+  reportadoMatricula: string;
+  reportadoSaldo: number;
+  reportadoBloqueado: boolean;
+  reportanteNome: string;
+}
+
+export async function listarReportes(): Promise<ReporteView[]> {
+  const linhas = await prisma.reporte.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      motivo: true,
+      descricao: true,
+      createdAt: true,
+      reportado: { select: { id: true, nome: true, codigoCarteira: true, saldo: true, bloqueado: true } },
+      reportante: { select: { nome: true } },
+    },
+  });
+  return linhas.map((r) => ({
+    id: r.id,
+    motivo: r.motivo,
+    descricao: r.descricao,
+    createdAt: r.createdAt,
+    reportadoId: r.reportado.id,
+    reportadoNome: r.reportado.nome,
+    reportadoMatricula: r.reportado.codigoCarteira,
+    reportadoSaldo: r.reportado.saldo,
+    reportadoBloqueado: r.reportado.bloqueado,
+    reportanteNome: r.reportante.nome,
+  }));
+}
+
+// Alertas de discrepância de preço (informativos, não bloqueiam nada) --------
+// A referência é sempre a feira inteira agrupada por categoria (pendentes + catálogo),
+// para maximizar a amostra e funcionar desde o começo, mesmo com catálogo pequeno.
+
+export interface AlertaDiscrepanciaView {
+  itemId: string;
+  nome: string;
+  categoria: string;
+  unidade: Unidade;
+  valor: number;
+  aluno: string | null; // pendente: quem trouxe; catálogo: null
+  origem: 'pendente' | 'catalogo';
+  motivos: MotivoAlerta[];
+}
+
+// `cache` por request: a tela do admin pede alertas do catálogo e o resumo de
+// discrepâncias na mesma renderização — sem isso o universo de preços seria lido duas vezes.
+const carregarUniversoDePrecos = cache(async function carregarUniversoDePrecos() {
+  const [pendentes, catalogo] = await Promise.all([
+    prisma.itemPendente.findMany({
+      where: { status: 'pendente' },
+      select: { id: true, nome: true, categoria: true, valor: true, unidade: true, aluno: { select: { nome: true } } },
+    }),
+    prisma.item.findMany({ select: { id: true, nome: true, categoria: true, valor: true, unidade: true } }),
+  ]);
+  const referencia: ItemAvaliavel[] = [
+    ...pendentes.map((p) => ({ categoria: p.categoria, valor: p.valor })),
+    ...catalogo.map((c) => ({ categoria: c.categoria, valor: c.valor })),
+  ];
+  return { pendentes, catalogo, referencia };
+});
+
+/** Contagem de alertas de preço por motivo — alimenta o gráfico de discrepâncias do admin. */
+export async function getResumoDiscrepancias(
+  unidade?: Unidade,
+): Promise<{ label: string; pendentes: number; catalogo: number }[]> {
+  const [dePendentes, doCatalogo] = await Promise.all([
+    getAlertasItensPendentes(),
+    getAlertasCatalogo(),
+  ]);
+  const visivel = (a: AlertaDiscrepanciaView) => !unidade || a.unidade === unidade;
+  const motivos: MotivoAlerta[] = ['preco_discrepante', 'preco_zero'];
+  return motivos.map((m) => ({
+    label: m,
+    pendentes: dePendentes.filter((a) => visivel(a) && a.motivos.includes(m)).length,
+    catalogo: doCatalogo.filter((a) => visivel(a) && a.motivos.includes(m)).length,
+  }));
+}
+
+/** Alertas dos itens PENDENTES (tela da recepção) — editáveis lá mesmo. */
+export async function getAlertasItensPendentes(): Promise<AlertaDiscrepanciaView[]> {
+  const { pendentes, referencia } = await carregarUniversoDePrecos();
+  return pendentes.flatMap((p) => {
+    const motivos = avaliarItem(p.valor, p.categoria, referencia);
+    if (motivos.length === 0) return [];
+    return [{
+      itemId: p.id,
+      nome: p.nome,
+      categoria: p.categoria,
+      unidade: p.unidade,
+      valor: p.valor,
+      aluno: p.aluno.nome,
+      origem: 'pendente' as const,
+      motivos,
+    }];
+  });
+}
+
+/** Alertas dos itens do CATÁLOGO em produção (tela do admin) — editáveis na aba Itens. */
+export async function getAlertasCatalogo(): Promise<AlertaDiscrepanciaView[]> {
+  const { catalogo, referencia } = await carregarUniversoDePrecos();
+  return catalogo.flatMap((c) => {
+    const motivos = avaliarItem(c.valor, c.categoria, referencia);
+    if (motivos.length === 0) return [];
+    return [{
+      itemId: c.id,
+      nome: c.nome,
+      categoria: c.categoria,
+      unidade: c.unidade,
+      valor: c.valor,
+      aluno: null,
+      origem: 'catalogo' as const,
+      motivos,
+    }];
   });
 }
 

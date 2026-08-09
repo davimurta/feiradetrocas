@@ -1,0 +1,445 @@
+.resumo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.metrica {
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--shadow-sm);
+}
+.metricaDestaque {
+  background: var(--accent-bg);
+  border-color: var(--accent-bd);
+}
+.metricaValor {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--green);
+}
+.metricaRotulo {
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 600;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.campoBusca {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+.campoBusca svg {
+  position: absolute;
+  left: 12px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.campoBusca input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-bd);
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+  padding: 10px 12px 10px 38px;
+  font-family: var(--f-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+.campoBusca input:focus-visible {
+  outline: none;
+  border-color: var(--green-soft);
+  box-shadow: var(--ring);
+}
+.campoCurto {
+  max-width: 190px;
+}
+.campoUnidade {
+  max-width: 220px;
+}
+.pushTodos {
+  margin-left: auto;
+}
+
+.vazio {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.selecaoBarra {
+  position: sticky;
+  top: 8px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--green-dark);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  box-shadow: var(--shadow);
+}
+.selecaoAcoes {
+  display: flex;
+  gap: 8px;
+}
+
+.tabelaWrap {
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.caption {
+  caption-side: top;
+  text-align: left;
+  padding: 12px 16px 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.tabela thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--accent-bg);
+  color: var(--ink-2);
+  font-family: var(--f-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-size: 0.6rem;
+  text-align: left;
+  padding: 10px 14px;
+  border-top: 1px solid var(--card-bd);
+  border-bottom: 1px solid var(--accent-bd);
+  white-space: nowrap;
+}
+.tabela td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--card-bd);
+  vertical-align: middle;
+}
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+.linha:hover td {
+  background: var(--accent-bg);
+}
+.linhaSelecionada td {
+  background: var(--accent-bg);
+}
+.linhaSelecionada td:first-child {
+  box-shadow: inset 3px 0 0 var(--green);
+}
+
+.colSel {
+  width: 40px;
+  padding-right: 0 !important;
+}
+.colSel input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--green);
+  cursor: pointer;
+}
+.colAcoes {
+  width: 1%;
+  text-align: right;
+}
+
+.itemNome,
+.alunoNome {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.itemSub {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  max-width: 34ch;
+}
+.categoria {
+  display: inline-block;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bd);
+  color: var(--green-text);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+.num {
+  text-align: right;
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.totalFichas {
+  color: var(--green-text);
+  font-weight: 700;
+}
+.unidade {
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.quando {
+  color: var(--muted);
+  white-space: nowrap;
+  font-size: 0.82rem;
+}
+.acoes {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.linhaEdicao td {
+  padding: 0;
+  background: var(--accent-bg);
+  box-shadow: inset 3px 0 0 var(--green);
+}
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px;
+}
+.formTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.formTitulo {
+  font-size: 0.82rem;
+  color: var(--ink-2);
+}
+.fechar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--input-bd);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.fechar:hover {
+  color: var(--ink);
+  border-color: var(--green-soft);
+}
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.campo > span {
+  font-size: 0.62rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+.campo input,
+.campo select,
+.campo textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--input-bd);
+  border-radius: var(--radius-sm);
+  min-height: 42px;
+  padding: 9px 11px;
+  font-family: var(--f-body);
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+.campo textarea {
+  min-height: 42px;
+  resize: vertical;
+  line-height: 1.4;
+}
+.campo input:focus-visible,
+.campo select:focus-visible,
+.campo textarea:focus-visible {
+  outline: none;
+  border-color: var(--green-soft);
+  box-shadow: var(--ring);
+}
+.campo input[type='number']::-webkit-outer-spin-button,
+.campo input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.campo input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.campoNome {
+  grid-column: span 2;
+}
+.campoDescricao {
+  grid-column: 1 / -1;
+}
+.formAcoes {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.formTotal {
+  margin-right: auto;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.formTotal strong {
+  font-family: var(--f-mono);
+  color: var(--green-text);
+}
+
+@media (max-width: 900px) {
+  .resumo {
+    grid-template-columns: 1fr;
+  }
+  .pushTodos {
+    margin-left: 0;
+    width: 100%;
+  }
+  .tabelaWrap {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    overflow-x: visible;
+  }
+  .tabela,
+  .tabela tbody,
+  .tabela tr,
+  .tabela td {
+    display: block;
+    width: 100%;
+  }
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .caption {
+    display: block;
+    width: 100%;
+    padding: 0 0 8px;
+  }
+  .tabela tbody tr {
+    background: var(--surface);
+    border: 1px solid var(--card-bd);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 12px;
+    padding: 12px 14px;
+  }
+  .tabela td {
+    border-bottom: none;
+    padding: 5px 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: left;
+  }
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted);
+    font-weight: 600;
+    flex: none;
+  }
+  .tabela td.num {
+    text-align: right;
+  }
+  .itemSub {
+    max-width: 22ch;
+  }
+  
+  .colSel {
+    width: 100%;
+    padding-right: 0 !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid var(--card-bd) !important;
+    margin-bottom: 4px;
+  }
+  .colAcoes {
+    text-align: left;
+    padding-top: 10px !important;
+  }
+  .acoes {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .acoes > * {
+    flex: 1;
+  }
+  .linhaEdicao td,
+  .linhaSelecionada td,
+  .linhaSelecionada td:first-child {
+    box-shadow: none;
+  }
+  .formulario {
+    padding: 0;
+  }
+  .campoNome {
+    grid-column: 1 / -1;
+  }
+}

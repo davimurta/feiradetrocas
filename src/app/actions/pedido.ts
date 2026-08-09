@@ -11,6 +11,7 @@ import { ok, fail, type ActionResult } from './_result';
 async function exigirLogin() {
   const user = await getCurrentUser();
   if (!user) throw new DomainError('NAO_AUTENTICADO', 'Faça login.');
+  if (user.bloqueado) throw new DomainError('CONTA_BLOQUEADA', 'Conta bloqueada.');
   return user;
 }
 

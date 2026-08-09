@@ -1,0 +1,87 @@
+# Stack completa da Feira de Trocas: banco + migrations + app.
+#
+# Subir:    docker compose up -d --build
+# Com demo: docker compose --profile demo up -d --build   (roda o seed)
+# Derrubar: docker compose down          (mantém os dados)
+#           docker compose down -v       (APAGA os dados)
+#
+# O `docker-compose.test.yml` é outra coisa: Postgres efêmero só para os testes.
+#
+# Atenção ao `DATABASE_URL`: o compose NÃO usa o do seu `.env`. Aquele aponta para
+# `localhost`, que dentro do container é o próprio container — o `migrate` falharia com
+# P1001. Aqui a URL interna é fixa (`@db:5432`). Para apontar para um Postgres externo
+# (Railway, Neon, RDS), use `DATABASE_URL_EXTERNO`.
+
+name: feiradetrocas
+
+x-banco: &banco
+  DATABASE_URL: ${DATABASE_URL_EXTERNO:-postgresql://postgres:postgres@db:5432/feira?schema=public}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: feira
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      # Exposto só para inspecionar o banco de fora (psql, DBeaver) — o app fala com ele pela
+      # rede interna. 5434 e não 5432: 5432 costuma já estar ocupado por um Postgres local e
+      # 5433 é do banco de testes (docker-compose.test.yml).
+      - "${POSTGRES_PORT:-5434}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d feira"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # Serviço de uma tacada: aplica as migrations e sai. O app só sobe depois que ele
+  # termina com sucesso — assim o schema nunca fica atrás do código.
+  migrate:
+    build:
+      context: .
+      target: builder
+    restart: "no"
+    environment: *banco
+    command: npx prisma migrate deploy
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    environment:
+      <<: *banco
+      # Sem valor real aqui a sessão fica assinada com o segredo default inseguro.
+      SESSION_SECRET: ${SESSION_SECRET:?defina SESSION_SECRET no .env (veja .env.example)}
+      TZ_EVENTO: ${TZ_EVENTO:-America/Sao_Paulo}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  # Dados de demonstração (logins e itens de exemplo). Fora do fluxo padrão de propósito:
+  # `--profile demo` só quando alguém quiser um ambiente já povoado.
+  seed:
+    profiles: ["demo"]
+    build:
+      context: .
+      target: builder
+    restart: "no"
+    environment: *banco
+    command: node prisma/seed.mjs
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  db-data:

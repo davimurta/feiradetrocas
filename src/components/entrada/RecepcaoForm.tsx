@@ -5,7 +5,11 @@ import { Unidade } from '@prisma/client';
 import type { ActionResult } from '@/app/actions/_result';
 import type { ReceberItemActionResult } from '@/app/actions/entrada';
 import type { ProdutoView, AlunoView } from '@/server/queries';
+import { cx } from '@/lib/cx';
 import { mensagemErro } from '@/lib/mensagens';
+import { chamar } from '@/lib/acao';
+import { Alert, Button, TextInput, SelectField, TextareaField } from '@/components/ui';
+import styles from './RecepcaoForm.module.css';
 
 const CATEGORIAS = ['Livros', 'Roupas', 'Brinquedos', 'Eletrônicos', 'Jogos', 'Papelaria', 'Outros'];
 const UNIDADES = Object.values(Unidade);
@@ -15,24 +19,27 @@ export function RecepcaoForm({
   receber,
   buscarItens,
   buscarAluno,
+  onCadastrado,
 }: {
-  /** Unidade sugerida (a do atendente); a recepção pode trocar por item. */
   unidadePadrao: Unidade;
   receber: (input: {
     matricula: string;
     nome: string;
     categoria: string;
     valor: number;
+    descricao?: string;
     unidade: Unidade;
   }) => Promise<ActionResult<ReceberItemActionResult>>;
   buscarItens: (input: { nome: string; unidade: Unidade }) => Promise<ActionResult<ProdutoView[]>>;
   buscarAluno: (input: { identificador: string }) => Promise<ActionResult<AlunoView | null>>;
+  onCadastrado?: (pendente: ReceberItemActionResult) => void;
 }) {
   const [nome, setNome] = useState('');
   const [categoria, setCategoria] = useState('Livros');
   const [unidade, setUnidade] = useState<Unidade>(unidadePadrao);
   const [matricula, setMatricula] = useState('');
   const [valor, setValor] = useState('');
+  const [descricao, setDescricao] = useState('');
 
   const [sugestoes, setSugestoes] = useState<ProdutoView[]>([]);
   const [mostrarSug, setMostrarSug] = useState(false);
@@ -53,7 +60,7 @@ export function RecepcaoForm({
       return;
     }
     debItem.current = setTimeout(async () => {
-      const res = await buscarItens({ nome: nome.trim(), unidade });
+      const res = await chamar(buscarItens({ nome: nome.trim(), unidade }));
       if (res.ok) setSugestoes(res.data);
     }, 250);
     return () => {
@@ -67,7 +74,7 @@ export function RecepcaoForm({
     setAlunoBuscado(false);
     if (matricula.trim().length < 3) return;
     debAluno.current = setTimeout(async () => {
-      const res = await buscarAluno({ identificador: matricula.trim() });
+      const res = await chamar(buscarAluno({ identificador: matricula.trim() }));
       if (res.ok) {
         setAluno(res.data);
         setAlunoBuscado(true);
@@ -96,14 +103,23 @@ export function RecepcaoForm({
     if (!Number.isInteger(n) || n <= 0) return setErro('Informe um valor inteiro de fichas (maior que zero).');
 
     setLoading(true);
-    const res = await receber({ matricula: matricula.trim(), nome: nome.trim(), categoria, valor: n, unidade });
+    const res = await chamar(receber({
+      matricula: matricula.trim(),
+      nome: nome.trim(),
+      categoria,
+      valor: n,
+      descricao: descricao.trim() || undefined,
+      unidade,
+    }));
     setLoading(false);
 
     if (res.ok) {
       setSucesso(res.data);
       setNome('');
       setValor('');
+      setDescricao('');
       setSugestoes([]);
+      onCadastrado?.(res.data);
     } else {
       setErro(mensagemErro(res.error.code, res.error.message));
     }
@@ -112,19 +128,19 @@ export function RecepcaoForm({
   return (
     <form className="stack" onSubmit={submit}>
       {sucesso && (
-        <div className="alert alert--success" role="status">
-          <b>{sucesso.item.nome}</b> registrado ({sucesso.novo ? 'novo item' : `estoque ${sucesso.item.quantidade}`}).
-          Creditado <b>{sucesso.creditado}</b> fichas para <b>{sucesso.alunoNome}</b>
-          {sucesso.alunoCriado ? ' (conta criada)' : ''}. Código <span className="mono">{sucesso.item.codigo}</span>.
-        </div>
+        <Alert variant="success">
+          <b>{sucesso.nome}</b> recebido de <b>{sucesso.alunoNome}</b>
+          {sucesso.alunoCriado ? ' (conta criada)' : ''} — aguardando produção. As <b>{sucesso.valor}</b> fichas serão
+          creditadas no push. Código <span className="mono">{sucesso.codigo}</span>.
+        </Alert>
       )}
 
-      <div className="form-grid">
-        <div className="field autocomplete">
-          <label htmlFor="nome">Nome do item:</label>
-          <input
-            id="nome"
-            className="input"
+      <div className={cx('card', styles.painel)}>
+        <h3 className={styles.painelTitulo}>Dados do item</h3>
+        <div className={styles.grid}>
+        <div className={cx(styles.autocomplete, styles.full)}>
+          <TextInput
+            label="Nome do item"
             value={nome}
             onChange={(e) => {
               setNome(e.target.value);
@@ -137,98 +153,84 @@ export function RecepcaoForm({
             disabled={loading}
           />
           {mostrarSug && sugestoes.length > 0 && (
-            <div className="suggestions">
+            <div className={styles.suggestions}>
               {sugestoes.map((p) => (
                 <button key={p.id} type="button" onMouseDown={() => escolherSugestao(p)}>
                   <span>
                     {p.nome} <span className="muted">· {p.categoria}</span>
                   </span>
-                  <span className="v">{p.valor} fichas</span>
+                  <span className={styles.v}>{p.valor} fichas</span>
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        <div className="field">
-          <label htmlFor="categoria">Categoria:</label>
-          <select
-            id="categoria"
-            className="select"
-            value={categoria}
-            onChange={(e) => setCategoria(e.target.value)}
-            disabled={loading}
-          >
-            {CATEGORIAS.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SelectField label="Categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)} disabled={loading}>
+          {CATEGORIAS.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </SelectField>
 
-        <div className="field">
-          <label htmlFor="unidade">Unidade do item:</label>
-          <select
-            id="unidade"
-            className="select"
-            value={unidade}
-            onChange={(e) => setUnidade(e.target.value as Unidade)}
-            disabled={loading}
-          >
-            {UNIDADES.map((u) => (
-              <option key={u} value={u}>
-                {u}
-              </option>
-            ))}
-          </select>
-        </div>
+        <TextInput
+          label="Valor (fichas)"
+          type="number"
+          min={1}
+          step={1}
+          inputMode="numeric"
+          mono
+          value={valor}
+          onChange={(e) => setValor(e.target.value)}
+          placeholder="10"
+          disabled={loading}
+        />
 
-        <div className="field">
-          <label htmlFor="matricula">Matrícula do aluno:</label>
-          <input
-            id="matricula"
-            className="input mono"
-            value={matricula}
-            onChange={(e) => setMatricula(e.target.value)}
-            placeholder="99999999"
-            autoComplete="off"
-            disabled={loading}
-          />
-          {alunoBuscado && (
-            <span className="muted" style={{ fontSize: '0.82rem' }}>
-              {aluno ? `Aluno: ${aluno.nome} (saldo ${aluno.saldo})` : 'Novo aluno — conta será criada.'}
-            </span>
-          )}
-        </div>
+        <SelectField
+          label="Unidade do item"
+          value={unidade}
+          onChange={(e) => setUnidade(e.target.value as Unidade)}
+          disabled={loading}
+        >
+          {UNIDADES.map((u) => (
+            <option key={u} value={u}>
+              {u}
+            </option>
+          ))}
+        </SelectField>
 
-        <div className="field">
-          <label htmlFor="valor">Valor do Item:</label>
-          <input
-            id="valor"
-            className="input mono"
-            type="number"
-            min={1}
-            step={1}
-            inputMode="numeric"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            placeholder="10"
-            disabled={loading}
-          />
+        <TextInput
+          label="Matrícula do aluno"
+          mono
+          value={matricula}
+          onChange={(e) => setMatricula(e.target.value)}
+          placeholder="99999999"
+          autoComplete="off"
+          disabled={loading}
+          hint={alunoBuscado ? (aluno ? `Aluno: ${aluno.nome} (saldo ${aluno.saldo})` : 'Novo aluno — conta será criada.') : undefined}
+        />
+
+        <TextareaField
+          containerClassName={styles.full}
+          label="Descrição (opcional)"
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+          placeholder="Estado do item, detalhes, observações…"
+          rows={3}
+          maxLength={500}
+          disabled={loading}
+          hint="Visível para admin, atendente de entrada e comprador."
+        />
         </div>
       </div>
 
-      {erro && (
-        <div className="alert alert--error" role="alert">
-          {erro}
-        </div>
-      )}
+      {erro && <Alert variant="error">{erro}</Alert>}
 
       <div>
-        <button type="submit" className="btn btn--primary" disabled={loading}>
+        <Button type="submit" variant="primary" disabled={loading}>
           {loading ? 'Cadastrando…' : 'Cadastrar'}
-        </button>
+        </Button>
       </div>
     </form>
   );

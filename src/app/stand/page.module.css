@@ -1,0 +1,12 @@
+.unidadeTag {
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: var(--accent-bg);
+  border: 1px solid var(--green-soft);
+  color: var(--green);
+  border-radius: 999px;
+  padding: 7px 16px;
+}

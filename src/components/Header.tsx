@@ -2,25 +2,28 @@ import { SignOut } from '@phosphor-icons/react/dist/ssr';
 import { Brand } from './Brand';
 import { logoutAction } from '@/app/actions/auth';
 import type { AuthUser } from '@/lib/auth';
+import styles from './Header.module.css';
 
 export function Header({ user }: { user: AuthUser }) {
   return (
-    <header className="header">
-      <span className="header-spacer" aria-hidden />
-      <Brand />
-      <div className="userbar">
-        <div className="who">
-          <b>{user.nome}</b>
-          <div className="papel">
-            {user.papel.replace('_', ' ')} · {user.unidade}
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        <span className={styles.spacer} aria-hidden />
+        <Brand />
+        <div className={styles.userbar}>
+          <div className={styles.who}>
+            <b>{user.nome}</b>
+            <div className={styles.papel}>
+              {user.papel.replace('_', ' ')} · {user.unidade}
+            </div>
           </div>
+          <form action={logoutAction}>
+            <button className={styles.logout} type="submit">
+              <SignOut size={16} weight="bold" />
+              Sair
+            </button>
+          </form>
         </div>
-        <form action={logoutAction}>
-          <button className="btn-logout" type="submit">
-            <SignOut size={18} weight="bold" />
-            Sair
-          </button>
-        </form>
       </div>
     </header>
   );

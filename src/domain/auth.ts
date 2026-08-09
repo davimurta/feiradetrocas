@@ -83,6 +83,9 @@ export async function entrarComSenha(
   const existente = await db.user.findUnique({ where: { email } });
 
   if (existente) {
+    if (existente.bloqueado) {
+      throw new DomainError('CONTA_BLOQUEADA', 'Sua conta está bloqueada.');
+    }
     if (existente.senhaHash) {
       if (!(await verificarSenha(input.senha, existente.senhaHash))) {
         throw new DomainError('CREDENCIAL_INVALIDA', 'Email ou senha incorretos.');
@@ -122,6 +125,9 @@ export async function entrarComGoogle(
 ): Promise<User> {
   const email = input.email.trim().toLowerCase();
   const existente = await db.user.findUnique({ where: { email } });
-  if (existente) return existente;
+  if (existente) {
+    if (existente.bloqueado) throw new DomainError('CONTA_BLOQUEADA', 'Sua conta está bloqueada.');
+    return existente;
+  }
   return provisionar(db, { email, nome: input.nome, provider: 'google' });
 }

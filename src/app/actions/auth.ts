@@ -9,12 +9,12 @@ import { entrarComSenha, entrarComGoogle } from '@/domain/auth';
 import { ok, fail, type ActionResult } from './_result';
 
 const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email('Email inválido.'),
-  senha: z.string().min(4, 'A senha precisa de ao menos 4 caracteres.'),
+  email: z.string().trim().toLowerCase().email('Email inválido.').max(160),
+  senha: z.string().min(4, 'A senha precisa de ao menos 4 caracteres.').max(128),
 });
 
 const googleSchema = z.object({
-  email: z.string().trim().toLowerCase().email('Email inválido.').optional(),
+  email: z.string().trim().toLowerCase().email('Email inválido.').max(160).optional(),
 });
 
 export async function loginComSenhaAction(

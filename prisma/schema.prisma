@@ -47,6 +47,11 @@ enum PedidoStatus {
   cancelado // atendente cancelou antes da aprovação
 }
 
+enum ItemPendenteStatus {
+  pendente // recebido na recepção, ainda não creditado nem no estoque
+  producao // "push" feito: aluno creditado e item somado ao estoque
+}
+
 model User {
   id String @id @default(cuid())
 
@@ -64,13 +69,20 @@ model User {
   /// definir papel/unidade ("colocar uma rule"). Enquanto true, só vê a tela de pendência.
   pendente Boolean @default(false)
 
+  /// Conta bloqueada pelo admin (via um reporte). Não faz login nem opera enquanto true.
+  bloqueado Boolean @default(false)
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  transacoes           Transacao[] @relation("TransacoesDoUsuario")
-  atendimentos         Transacao[] @relation("TransacoesDoAtendente")
-  pedidosComoComprador Pedido[]    @relation("PedidoComprador")
-  pedidosComoAtendente Pedido[]    @relation("PedidoAtendente")
+  transacoes           Transacao[]    @relation("TransacoesDoUsuario")
+  atendimentos         Transacao[]    @relation("TransacoesDoAtendente")
+  pedidosComoComprador Pedido[]       @relation("PedidoComprador")
+  pedidosComoAtendente Pedido[]       @relation("PedidoAtendente")
+  entradasComoAluno    ItemPendente[] @relation("EntradaAluno")
+  entradasComoAtendente ItemPendente[] @relation("EntradaAtendente")
+  reportesRecebidos    Reporte[]      @relation("ReporteReportado")
+  reportesFeitos       Reporte[]      @relation("ReporteReportante")
 
   @@map("users")
 }
@@ -83,6 +95,9 @@ model Item {
   valor      Int
   quantidade Int     @default(0)
   unidade    Unidade @default(barroca)
+
+  /// Detalhe do item. Visível só para admin, atendente de entrada e comprador.
+  descricao String?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -117,6 +132,11 @@ model Transacao {
 
   @@index([userId, createdAt])
   @@index([itemId])
+  // Índices do painel de métricas: as agregações do admin filtram por janela de tempo
+  // (série temporal), por tipo dentro da janela (fichas emitidas/gastas) e por atendente.
+  @@index([createdAt])
+  @@index([tipo, createdAt])
+  @@index([atendenteId, createdAt])
   @@map("transacoes")
 }
 
@@ -150,5 +170,57 @@ model Pedido {
 
   @@index([compradorId, status])
   @@index([status, createdAt])
+  // Comparativo de atividade por atendente no painel de métricas.
+  @@index([atendenteId, status])
   @@map("pedidos")
+}
+
+/// Item recebido na recepção que aguarda o "push" para produção. Enquanto `pendente`, o
+/// aluno ainda NÃO foi creditado e o item não aparece no catálogo. O push credita o aluno
+/// e soma o item ao estoque (model Item), stacking por (nome, valor, unidade).
+model ItemPendente {
+  id         String  @id @default(cuid())
+  codigo     String  @unique
+  nome       String
+  categoria  String
+  valor      Int
+  quantidade Int     @default(1)
+  unidade    Unidade @default(barroca)
+  descricao  String?
+
+  alunoId String @map("aluno_id")
+  aluno   User   @relation("EntradaAluno", fields: [alunoId], references: [id])
+
+  atendenteId String @map("atendente_id")
+  atendente   User   @relation("EntradaAtendente", fields: [atendenteId], references: [id])
+
+  status    ItemPendenteStatus @default(pendente)
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+
+  @@index([status, unidade, createdAt])
+  // Produtividade da recepção por atendente (painel de métricas).
+  @@index([atendenteId, createdAt])
+  @@map("itens_pendentes")
+}
+
+/// Denúncia feita pelo stand contra um comprador (ex.: recusa indevida, furto). O admin
+/// analisa e pode bloquear a conta ou zerar o saldo do denunciado.
+model Reporte {
+  id        String  @id @default(cuid())
+  motivo    String
+  descricao String?
+
+  reportadoId String @map("reportado_id")
+  reportado   User   @relation("ReporteReportado", fields: [reportadoId], references: [id])
+
+  reportanteId String @map("reportante_id")
+  reportante   User   @relation("ReporteReportante", fields: [reportanteId], references: [id])
+
+  pedidoId String? @map("pedido_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("reportes")
 }

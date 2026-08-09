@@ -1,0 +1,61 @@
+.tutorial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 2px 4px 4px;
+}
+.iconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.passoNum {
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+}
+.titulo {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--ink);
+}
+.texto {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.dots {
+  display: flex;
+  gap: 7px;
+  margin: 8px 0 4px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--input-bd);
+  transition: width 0.15s ease, background 0.15s ease;
+}
+.dotAtivo {
+  background: var(--green);
+  width: 22px;
+}
+.nav {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+.nav > * {
+  flex: 1;
+}

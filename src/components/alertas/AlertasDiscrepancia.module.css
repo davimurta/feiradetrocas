@@ -1,0 +1,101 @@
+.box {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--warn-bg);
+  border: 1.5px solid var(--warn-bd);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--warn-fg);
+}
+.head strong {
+  color: var(--ink);
+  font-family: var(--f-display);
+}
+.icone {
+  flex: none;
+}
+.nota {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius-sm);
+}
+.info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.nome {
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.motivos {
+  display: flex;
+  gap: 6px;
+  flex: none;
+  flex-wrap: wrap;
+}
+.valor {
+  flex: none;
+  font-family: var(--f-mono);
+  font-weight: 700;
+  color: var(--green-text);
+  white-space: nowrap;
+}
+.valor small {
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.alvo {
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 3px var(--green-soft);
+  transition: box-shadow 0.25s ease;
+}
+
+@media (max-width: 620px) {
+  .item {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .nota {
+    margin-left: 0;
+    width: 100%;
+  }
+}

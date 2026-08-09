@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser, rotaInicial } from '@/lib/auth';
 import { logoutAction } from '@/app/actions/auth';
+import { Button } from '@/components/ui';
 
 export default async function PendentePage() {
   const user = await getCurrentUser();
@@ -17,9 +18,9 @@ export default async function PendentePage() {
         </p>
         <p className="muted">Procure a organização da feira. Assim que for liberado, é só entrar de novo.</p>
         <form action={logoutAction}>
-          <button className="btn btn--primary" type="submit">
+          <Button type="submit" variant="primary">
             Sair
-          </button>
+          </Button>
         </form>
       </div>
     </main>

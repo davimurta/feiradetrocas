@@ -1,0 +1,11 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.submit {
+  margin-top: 6px;
+}
+.hint {
+  font-size: 0.82rem;
+}
