@@ -38,12 +38,15 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 RUN groupadd --system --gid 1001 nodejs \
-  && useradd --system --uid 1001 --gid nodejs feira
+  && useradd --system --uid 1001 --gid nodejs --create-home --shell /bin/bash feira \
+  && mkdir -p /home/feira/.npm \
+  && chown -R feira:nodejs /home/feira
 
 COPY --from=builder --chown=feira:nodejs /app/public ./public
 COPY --from=builder --chown=feira:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=feira:nodejs /app/.next/static ./.next/static
 
+ENV NPM_CONFIG_CACHE=/home/feira/.npm
 USER feira
 EXPOSE 3000
 
