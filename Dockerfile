@@ -45,12 +45,15 @@ RUN VERSAO="$(node -p "require('./package-lock.json').packages['node_modules/pri
   && npm init -y > /dev/null \
   && npm install --no-audit --no-fund "prisma@${VERSAO}"
 
-# Poda o que `migrate deploy` não usa. Sem isto a CLI leva ~150 MB para dentro da imagem
-# de runtime: engines/wasm de MySQL, SQLite, SQL Server e CockroachDB, o query engine
-# (quem consulta é o @prisma/client do app, não a CLI) e o `typescript`, que só faria
-# falta com um `prisma.config.ts` — este projeto não tem.
+# Poda só BINÁRIO: engines e wasm dos bancos que este projeto não usa (MySQL, SQLite,
+# SQL Server, CockroachDB) e o query engine — quem consulta é o @prisma/client do app,
+# não a CLI. Sobra o schema engine, que é o que `migrate deploy` precisa.
+#
+# Pacotes JS ficam todos. Tentei remover `typescript` e `fast-check` (28 MB) e a CLI
+# quebrou com `Cannot find module 'fast-check'`: o `effect`, dependência do
+# `@prisma/config`, carrega esse módulo no require da própria index. Economia pequena,
+# risco de quebrar o deploy — não compensa.
 RUN cd /cli/node_modules \
-  && rm -rf typescript fast-check \
   && rm -f @prisma/engines/libquery_engine-* prisma/libquery_engine-* \
   && rm -f prisma/build/query_engine_bg.{mysql,sqlite,sqlserver,cockroachdb}.* \
   && rm -f prisma/build/query_compiler_bg.{mysql,sqlite,sqlserver,cockroachdb}.* \
@@ -84,6 +87,16 @@ COPY --from=builder --chown=feira:nodejs /app/prisma ./prisma
 COPY --from=prisma-cli --chown=feira:nodejs /cli/node_modules ./.prisma-cli/node_modules
 COPY --chown=feira:nodejs pre-deploy.sh ./pre-deploy.sh
 RUN chmod +x /app/pre-deploy.sh
+
+# Rede de segurança para quem digitar `npx prisma ...` no pre-deploy da plataforma.
+# O npx procura `./node_modules/.bin/<cmd>` ANTES de baixar do registry: com este atalho
+# ele usa a CLI 6.x que já está na imagem em vez de instalar a `latest` (prisma@7, que
+# rejeita `url` no datasource com P1012) e sem escrever cache no HOME (EACCES).
+RUN mkdir -p /app/node_modules/.bin \
+  && printf '#!/bin/sh\nexec node /app/.prisma-cli/node_modules/prisma/build/index.js "$@"\n' \
+     > /app/node_modules/.bin/prisma \
+  && chmod +x /app/node_modules/.bin/prisma \
+  && chown -h feira:nodejs /app/node_modules/.bin/prisma
 
 ENV NPM_CONFIG_CACHE=/home/feira/.npm
 # Sem "check de versão nova" da CLI: é rede desnecessária no meio do deploy.

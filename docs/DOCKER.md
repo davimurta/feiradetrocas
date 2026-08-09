@@ -80,20 +80,27 @@ está num profile. Para limpar tudo, use `docker compose --profile demo down`.
 Ele aplica as migrations pendentes usando a CLI do Prisma que **já vem dentro da imagem**,
 na versão exata do `package-lock.json`, com o caminho do schema explícito.
 
-**Não use `npx prisma migrate deploy` como pre-deploy.** Falha por três motivos, todos
-já vistos neste projeto:
+### Por que não `npx prisma migrate deploy`
 
-1. `npx` baixa a CLI da internet e pega a `latest` (hoje prisma@7) — major diferente das
-   migrations e do `@prisma/client` gerados aqui;
-2. `npx` grava cache no HOME e o container roda como o usuário não-root `feira`, o que
-   dá `npm error EACCES`;
-3. a CLI baixada roda a partir de um diretório temporário e não acha `prisma/schema.prisma`
+Esse comando falhava por três motivos empilhados:
+
+1. `npx` baixava a CLI do registry e pegava a `latest` — prisma@7, que rejeita
+   `url = env("DATABASE_URL")` no datasource (`P1012`, quer `prisma.config.ts`) e é um
+   major acima do `@prisma/client` 6.x que gerou estas migrations;
+2. `npx` grava cache no HOME e o container roda como o usuário não-root `feira` →
+   `npm error EACCES`;
+3. a CLI baixada rodava de um diretório temporário e não achava `prisma/schema.prisma`
    (`Could not find Prisma Schema`).
 
-Rodar como root resolveria só o item 2 — os outros dois continuariam. Por isso a correção
-foi na imagem, não na permissão: o `runner` agora carrega `prisma/` (schema + migrations)
-e uma árvore isolada com a CLI em `/app/.prisma-cli`, e `CHECKPOINT_DISABLE=1` evita
-qualquer ida à rede durante o deploy. O container segue rodando como usuário não-root.
+Rodar como root resolveria só o item 2 — os outros dois continuariam. A correção foi na
+imagem: o `runner` carrega `prisma/` (schema + migrations) e uma árvore isolada com a CLI
+**6.x** em `/app/.prisma-cli`, e `CHECKPOINT_DISABLE=1` evita ida à rede no deploy. O
+container segue não-root.
+
+Além disso existe um atalho em `/app/node_modules/.bin/prisma` apontando para essa CLI.
+O `npx` procura o binário local antes de ir ao registry, então **`npx prisma migrate
+deploy` também funciona** — usa a 6.19.3 da imagem e não baixa nada. É rede de segurança:
+prefira `/app/pre-deploy.sh`, que é explícito e passa o `--schema`.
 
 Variáveis que a plataforma precisa ter:
 
