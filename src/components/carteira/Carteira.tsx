@@ -143,7 +143,7 @@ export function Carteira({
       )}
 
       <div className={styles.grid}>
-        <CarteiraAcoes saldo={saldo} codigoCarteira={codigoCarteira} />
+        <CarteiraAcoes saldo={saldo} codigoCarteira={codigoCarteira} propostaAberta={atual !== null} />
         <div className="stack">
           <h2>Histórico de compras</h2>
           <TransacaoList itens={historico} vazio="Nenhuma transação ainda." />

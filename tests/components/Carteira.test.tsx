@@ -120,6 +120,60 @@ describe('Carteira (aprovação em tela cheia)', () => {
     expect(sincronizarCarteiraAction).toHaveBeenCalledTimes(1);
   });
 
+  it('proposta que chega fecha o QR aberto e trava os botões', async () => {
+    const user = userEvent.setup();
+    vi.mocked(sincronizarCarteiraAction).mockResolvedValue({
+      ok: true,
+      data: { saldo: 50, historico: [], pendentes: [pendente] },
+    });
+    render(<Carteira {...base} pendentes={[]} />);
+
+    await user.click(screen.getByRole('button', { name: /Exibir QRcode/ }));
+    expect(screen.getByRole('dialog', { name: 'Sua carteira' })).toBeInTheDocument();
+
+    // Chega a proposta (o stand montou o pedido enquanto o aluno olhava o QR).
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
+
+    expect(screen.queryByRole('dialog', { name: 'Sua carteira' })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /Aprovar compra/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Exibir QRcode/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Fazer tutorial/ })).toBeDisabled();
+  });
+
+  it('o tutorial aberto também sai da frente da proposta', async () => {
+    const user = userEvent.setup();
+    vi.mocked(sincronizarCarteiraAction).mockResolvedValue({
+      ok: true,
+      data: { saldo: 50, historico: [], pendentes: [pendente] },
+    });
+    render(<Carteira {...base} pendentes={[]} />);
+
+    await user.click(screen.getByRole('button', { name: /Fazer tutorial/ }));
+    const tutorial = screen.getAllByRole('dialog').find((d) => d.textContent?.includes('recepção'));
+    expect(tutorial).toBeDefined();
+
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
+
+    const dialogos = screen.getAllByRole('dialog');
+    expect(dialogos).toHaveLength(1);
+    expect(dialogos[0]).toHaveAccessibleName(/Aprovar compra/);
+  });
+
+  it('resolvida a proposta, os botões voltam sem reabrir o QR sozinho', async () => {
+    const user = userEvent.setup();
+    vi.mocked(recusarPedidoAction).mockResolvedValue({ ok: true, data: { ok: true } });
+    render(<Carteira {...base} />);
+
+    await user.click(screen.getByRole('button', { name: /Recusar/ }));
+
+    expect(screen.getByRole('button', { name: /Exibir QRcode/ })).toBeEnabled();
+    expect(screen.queryByRole('dialog', { name: 'Sua carteira' })).not.toBeInTheDocument();
+  });
+
   it('a sincronização não desfaz o saldo de uma aprovação em voo', async () => {
     const user = userEvent.setup();
     vi.mocked(aprovarPedidoAction).mockResolvedValue({

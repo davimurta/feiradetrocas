@@ -109,7 +109,9 @@ Em progresso / não commitado: o histórico git tem só 2 commits e ~87 arquivos
 - `tests/e2e-ui/fluxo.spec.ts` espera `heading "Venda aprovada"` no stand, mas o redesign renomeou para "Venda concluída" (e é uma `div`, não um heading) — o teste do fluxo Floresta falha por isso, independente do painel de métricas. Decidir entre atualizar o seletor ou promover o texto a heading (a segunda opção também melhora a acessibilidade) [A CONFIRMAR].
 - `listarItensAdmin`/`listarUsuariosAdmin` continuam sem paginação: `/admin` carrega catálogo e base de usuários inteiros no primeiro render. Não é agregação no client (a leitura é server-side), mas o payload cresce linearmente com o evento.
 - `getCurrentUser` mantém override mockado (`__setMockUserId`) para testes.
-- `SESSION_SECRET` tem default inseguro embutido; exige valor real em produção.
+- `SESSION_SECRET`: o fallback embutido agora **só existe fora de produção** — com `NODE_ENV=production` e a variável ausente, `src/lib/session.ts` lança erro. O repositório é público, então o valor default é conhecido: sem essa guarda, dava para forjar o cookie `feira_session` (`userId.hmac`) de qualquer conta, inclusive admin.
+- Repositório público: `prisma/seed.mjs` e o `README.md` trazem senhas de demonstração (`admin123`, `stand123`…). São dados de exemplo e podem continuar públicos, mas **nunca rodar o seed contra produção** — seria conta de admin com senha conhecida. O `seed` do compose está atrás do profile `demo` por isso.
+- `.env.test` é versionado de propósito (credenciais de um Postgres local em `localhost:5433` + segredo de teste). Não é vazamento, mas esse `SESSION_SECRET` jamais deve ser reaproveitado fora dos testes.
 - Sem TODO/FIXME reais no `src` além do apontado. Sem `docs/*.md` de planejamento além de `README.md` e `PRODUCAO.md` (ambos na raiz).
 
 ## Docker

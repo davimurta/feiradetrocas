@@ -4,17 +4,42 @@
   color: var(--green-text);
 }
 .frame {
-  background: #fff;
-  padding: 8px;
+  position: relative;
+  background: #000;
+  padding: 6px;
   border-radius: var(--radius);
   border: 1px solid var(--card-bd);
   line-height: 0;
   margin-top: 8px;
+  overflow: hidden;
 }
 .video {
   width: 100%;
+  max-height: 320px;
+  object-fit: cover;
   border-radius: 8px;
+}
+/* Mira: ajuda a enquadrar o QR e deixa claro que a câmera está lendo, não filmando. */
+.mira {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: min(58%, 200px);
+  aspect-ratio: 1;
+  border: 3px solid var(--green-bright);
+  border-radius: 12px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+.dica {
+  font-size: 0.82rem;
+}
+/* `display: none` em vez de desmontar: o <video> precisa existir antes de a câmera abrir,
+   senão a ref ainda é null quando o stream chega. */
+.oculto {
+  display: none;
 }
 .camError {
   font-size: 0.85rem;
+  color: var(--danger-fg);
 }

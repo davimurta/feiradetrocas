@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QrCode, Question } from '@phosphor-icons/react/dist/ssr';
 import { cx } from '@/lib/cx';
 import { Button, Modal } from '@/components/ui';
@@ -8,9 +8,24 @@ import { QRCode } from '@/components/QRCode';
 import { TutorialModal } from './TutorialModal';
 import styles from './CarteiraAcoes.module.css';
 
-export function CarteiraAcoes({ saldo, codigoCarteira }: { saldo: number; codigoCarteira: string }) {
+export function CarteiraAcoes({
+  saldo,
+  codigoCarteira,
+  propostaAberta = false,
+}: {
+  saldo: number;
+  codigoCarteira: string;
+  propostaAberta?: boolean;
+}) {
   const [qr, setQr] = useState(false);
   const [tut, setTut] = useState(false);
+
+  useEffect(() => {
+    if (propostaAberta) {
+      setQr(false);
+      setTut(false);
+    }
+  }, [propostaAberta]);
 
   return (
     <div className="stack">
@@ -25,11 +40,22 @@ export function CarteiraAcoes({ saldo, codigoCarteira }: { saldo: number; codigo
       </div>
 
       <div className={styles.acoes}>
-        <button type="button" className={styles.sideBtn} onClick={() => setQr(true)}>
+        <button
+          type="button"
+          className={styles.sideBtn}
+          onClick={() => setQr(true)}
+          disabled={propostaAberta}
+        >
           <QrCode size={34} weight="regular" />
           <span>Exibir QRcode</span>
         </button>
-        <button type="button" className={styles.sideBtn} onClick={() => setTut((v) => !v)} aria-pressed={tut}>
+        <button
+          type="button"
+          className={styles.sideBtn}
+          onClick={() => setTut((v) => !v)}
+          aria-pressed={tut}
+          disabled={propostaAberta}
+        >
           <Question size={34} weight="regular" />
           <span>Fazer tutorial</span>
         </button>

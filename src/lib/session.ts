@@ -3,7 +3,14 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 const COOKIE = 'feira_session';
 
 function secret(): string {
-  return process.env.SESSION_SECRET || 'dev-inseguro-troque-em-producao';
+  const valor = process.env.SESSION_SECRET;
+  if (valor) return valor;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'SESSION_SECRET não definido. Defina um valor aleatório (node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))") antes de subir em produção.',
+    );
+  }
+  return 'dev-inseguro-troque-em-producao';
 }
 
 function assinar(valor: string): string {

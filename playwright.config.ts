@@ -27,7 +27,10 @@ export default defineConfig({
   webServer: {
     // Build + start apontando para o banco de teste. @next/env não sobrescreve variáveis
     // já presentes em process.env, então esta DATABASE_URL (feira_test) vence a do .env.
-    command: `npm run build && npx next start -p ${PORT}`,
+    // `next start` não serve o build `output: 'standalone'` (só avisa e serve por acaso).
+    // Rodamos o próprio server.js do standalone — o mesmo binário que roda em produção —
+    // depois de colocar `public/` e `.next/static` onde ele os procura.
+    command: `npm run build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && node .next/standalone/server.js`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: false,
     timeout: 180_000,

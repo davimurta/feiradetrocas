@@ -57,8 +57,12 @@
 .sideBtn span {
   color: var(--ink);
 }
-.sideBtn:hover {
+.sideBtn:hover:not(:disabled) {
   border-color: var(--green-soft);
+}
+.sideBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .tut {
   font-size: 0.9rem;
