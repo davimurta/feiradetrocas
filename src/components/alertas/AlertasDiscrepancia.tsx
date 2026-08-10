@@ -33,7 +33,7 @@ export function AlertasDiscrepancia({
         <strong>
           {n} {n === 1 ? 'item precisa' : 'itens precisam'} de revisão de preço
         </strong>
-        <span className={styles.nota}>Apenas um aviso — não impede a produção.</span>
+        <span className={styles.nota}>Apenas um aviso, não impede a produção.</span>
       </header>
       <ul className={styles.lista}>
         {alertas.map((a) => (

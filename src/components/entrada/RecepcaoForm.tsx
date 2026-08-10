@@ -130,7 +130,7 @@ export function RecepcaoForm({
       {sucesso && (
         <Alert variant="success">
           <b>{sucesso.nome}</b> recebido de <b>{sucesso.alunoNome}</b>
-          {sucesso.alunoCriado ? ' (conta criada)' : ''} — aguardando produção. As <b>{sucesso.valor}</b> fichas serão
+          {sucesso.alunoCriado ? ' (conta criada)' : ''}. Aguardando produção. As <b>{sucesso.valor}</b> fichas serão
           creditadas no push. Código <span className="mono">{sucesso.codigo}</span>.
         </Alert>
       )}
@@ -208,7 +208,7 @@ export function RecepcaoForm({
           placeholder="99999999"
           autoComplete="off"
           disabled={loading}
-          hint={alunoBuscado ? (aluno ? `Aluno: ${aluno.nome} (saldo ${aluno.saldo})` : 'Novo aluno — conta será criada.') : undefined}
+          hint={alunoBuscado ? (aluno ? `Aluno: ${aluno.nome} (saldo ${aluno.saldo})` : 'Novo aluno, conta será criada.') : undefined}
         />
 
         <TextareaField

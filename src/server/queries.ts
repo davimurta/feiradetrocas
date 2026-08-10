@@ -302,7 +302,7 @@ export interface AlertaDiscrepanciaView {
 }
 
 // `cache` por request: a tela do admin pede alertas do catálogo e o resumo de
-// discrepâncias na mesma renderização — sem isso o universo de preços seria lido duas vezes.
+// discrepâncias na mesma renderização, sem isso o universo de preços seria lido duas vezes.
 const carregarUniversoDePrecos = cache(async function carregarUniversoDePrecos() {
   const [pendentes, catalogo] = await Promise.all([
     prisma.itemPendente.findMany({
@@ -318,7 +318,7 @@ const carregarUniversoDePrecos = cache(async function carregarUniversoDePrecos()
   return { pendentes, catalogo, referencia };
 });
 
-/** Contagem de alertas de preço por motivo — alimenta o gráfico de discrepâncias do admin. */
+/** Contagem de alertas de preço por motivo, alimenta o gráfico de discrepâncias do admin. */
 export async function getResumoDiscrepancias(
   unidade?: Unidade,
 ): Promise<{ label: string; pendentes: number; catalogo: number }[]> {
@@ -335,7 +335,7 @@ export async function getResumoDiscrepancias(
   }));
 }
 
-/** Alertas dos itens PENDENTES (tela da recepção) — editáveis lá mesmo. */
+/** Alertas dos itens PENDENTES (tela da recepção), editáveis lá mesmo. */
 export async function getAlertasItensPendentes(): Promise<AlertaDiscrepanciaView[]> {
   const { pendentes, referencia } = await carregarUniversoDePrecos();
   return pendentes.flatMap((p) => {
@@ -354,7 +354,7 @@ export async function getAlertasItensPendentes(): Promise<AlertaDiscrepanciaView
   });
 }
 
-/** Alertas dos itens do CATÁLOGO em produção (tela do admin) — editáveis na aba Itens. */
+/** Alertas dos itens do CATÁLOGO em produção (tela do admin), editáveis na aba Itens. */
 export async function getAlertasCatalogo(): Promise<AlertaDiscrepanciaView[]> {
   const { catalogo, referencia } = await carregarUniversoDePrecos();
   return catalogo.flatMap((c) => {

@@ -1,4 +1,4 @@
-// Higiene de texto vindo de inputs. Defesa em profundidade — a proteção real contra SQL
+// Higiene de texto vindo de inputs. Defesa em profundidade, a proteção real contra SQL
 // injection é o Prisma (queries parametrizadas); aqui limpamos ruído perigoso e limitamos
 // tamanho antes de chegar ao servidor/estado. As classes de regex são montadas por código
 // (via code points) para o arquivo-fonte ficar 100% ASCII.
@@ -22,7 +22,7 @@ const CONTROLES_MULTILINHA = classeDeFaixas([
   [0x0b, 0x1f],
   [0x7f, 0x7f],
 ]);
-// Zero-width, joiners, overrides de direção (bidi) e BOM — usados para spoofing/ofuscação.
+// Zero-width, joiners, overrides de direção (bidi) e BOM, usados para spoofing/ofuscação.
 const INVISIVEIS = classeDePontos([
   0x200b, 0x200c, 0x200d, 0x200e, 0x200f, 0x202a, 0x202b, 0x202c, 0x202d, 0x202e, 0x2060, 0xfeff,
 ]);

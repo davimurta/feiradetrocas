@@ -1,4 +1,4 @@
-# Feira de Trocas — COTEMIG
+# Feira de Trocas: COTEMIG
 
 Sistema de economia de **fichas** para a feira de trocas do COTEMIG. Alunos entregam itens
 na recepção e ganham fichas; gastam essas fichas comprando itens de outros alunos no stand.
@@ -16,7 +16,7 @@ aluno é creditado em fichas                    item entra no catálogo
 
 ## Rodar
 
-### Com Docker (recomendado — só precisa de Docker instalado)
+### Com Docker (recomendado: só precisa de Docker instalado)
 
 ```bash
 cp .env.example .env
@@ -51,7 +51,7 @@ npm run dev
 | aluno (Floresta) | `20240002@aluno.cotemig.com.br` | `aluno123` |
 
 > Estas senhas são públicas (estão neste repositório). **Nunca rode o seed contra
-> produção** — seria um admin com senha conhecida. Em produção, crie a conta com
+> produção**: seria um admin com senha conhecida. Em produção, crie a conta com
 > `node prisma/criar-admin.mjs <email> <senha>`.
 
 `SESSION_SECRET` é obrigatório em produção: sem ele o app lança erro em vez de assinar as
@@ -63,7 +63,7 @@ cookie de qualquer conta.
 | Rota | Quem acessa | O que faz |
 |---|---|---|
 | [`/login`](src/app/login/page.tsx) | público | Entrar por email e senha; email novo cria conta de aluno |
-| [`/`](src/app/page.tsx) | logado | Catálogo dos itens disponíveis, com busca |
+| [`/`](src/app/page.tsx) | logado | Só redireciona para a tela inicial do papel |
 | [`/carteira`](src/app/carteira/page.tsx) | logado | Saldo, QR pessoal, histórico e aprovação de compras |
 | [`/entrada`](src/app/entrada/page.tsx) | recepção / admin | Cadastro de itens e fila de pendentes |
 | [`/stand`](src/app/stand/page.tsx) | stand / admin | Caixa: monta o pedido pelo catálogo |
@@ -71,7 +71,7 @@ cookie de qualquer conta.
 | [`/pendente`](src/app/pendente/page.tsx) | conta pendente | Espera o admin definir papel e unidade |
 
 Duas **unidades** (campi): `barroca` e `floresta`. As telas operacionais filtram por
-unidade; o saldo do aluno é global — ele ganha fichas num campus e gasta no outro.
+unidade; o saldo do aluno é global: ele ganha fichas num campus e gasta no outro.
 
 ## Os fluxos
 
@@ -86,7 +86,7 @@ seleção ou a fila inteira.
 
 **3. Compra em duas pontas.** O stand monta o `Pedido`; nada é debitado ainda. O pedido
 aparece em tela cheia na carteira do comprador, que **aceita ou recusa**. Só na aceitação
-o estoque baixa e o saldo é debitado — tudo numa transação. Se faltar saldo ou estoque
+o estoque baixa e o saldo é debitado, tudo numa transação. Se faltar saldo ou estoque
 nesse instante, o pedido vira `recusado` com o motivo registrado.
 
 **4. Reporte.** O stand pode reportar um comprador (recusa indevida, por exemplo). O admin
@@ -161,7 +161,7 @@ npm run typecheck
 ```
 
 Os testes de banco usam um Postgres em container (`npm run db:test:up`, porta 5433, dados em
-memória) e se **auto-pulam** se não houver `.env.test` — rodar a suíte sem infra não quebra.
+memória) e se **auto-pulam** se não houver `.env.test`, então rodar a suíte sem infra não quebra.
 
 | Camada | O que cobre |
 |---|---|
@@ -175,7 +175,7 @@ memória) e se **auto-pulam** se não houver `.env.test` — rodar a suíte sem 
 
 | Arquivo | Assunto |
 |---|---|
-| [docs/CONTEXT.md](docs/CONTEXT.md) | Estado real do código, decisões e débitos técnicos — leia antes de mexer |
+| [docs/CONTEXT.md](docs/CONTEXT.md) | Estado real do código, decisões e débitos técnicos: leia antes de mexer |
 | [docs/DOCKER.md](docs/DOCKER.md) | Subir com Docker, deploy, backup e entrega para terceiros |
 | [PRODUCAO.md](PRODUCAO.md) | Notas de produção |
 

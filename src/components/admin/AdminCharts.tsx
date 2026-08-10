@@ -30,7 +30,7 @@ import {
 } from './paleta';
 import styles from './metricas.module.css';
 
-// Specs fixas de marca — barra fina com ponta arredondada, linha de 2px, grade discreta.
+// Specs fixas de marca: barra fina com ponta arredondada, linha de 2px, grade discreta.
 const BARRA_MAX = 24;
 const EIXO_TICK = { fontSize: 11, fill: EIXO } as const;
 const eixoBase = { tickLine: false, axisLine: { stroke: GRID }, tick: EIXO_TICK } as const;

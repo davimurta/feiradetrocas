@@ -36,7 +36,7 @@ test('stand cria pedido → comprador aprova → saldo debita (unidade Floresta)
   await stand.getByRole('button', { name: /Enviar para aprovação/ }).click();
   await expect(stand.getByRole('heading', { name: 'Aguardando aprovação' })).toBeVisible();
 
-  // 2) Bruno aprova na carteira dele — tela cheia de aprovação (Aceitar/Recusar).
+  // 2) Bruno aprova na carteira dele, tela cheia de aprovação (Aceitar/Recusar).
   await login(buyer, '20240002@aluno.cotemig.com.br', 'aluno123');
   await expect(buyer.getByRole('dialog', { name: /Aprovar compra/ })).toBeVisible();
   await expect(buyer.getByText('Fone de ouvido')).toBeVisible();

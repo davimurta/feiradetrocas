@@ -49,7 +49,7 @@ describe('avaliarItem', () => {
   });
 
   it('grupo pequeno: cai no fallback de múltiplo contra a mediana geral da feira', () => {
-    // Só 2 "Eletrônicos" — abaixo da amostra mínima. A feira toda gira em ~10 fichas.
+    // Só 2 "Eletrônicos", abaixo da amostra mínima. A feira toda gira em ~10 fichas.
     const referencia: ItemAvaliavel[] = [
       ...livros,
       { categoria: 'Eletrônicos', valor: 12 },

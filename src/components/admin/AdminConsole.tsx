@@ -13,10 +13,11 @@ import { AdminMetricas } from './AdminMetricas';
 import { AdminItens } from './AdminItens';
 import { AdminUsuarios } from './AdminUsuarios';
 import { AdminReportes } from './AdminReportes';
+import { AdminAcoesCriticas } from './AdminAcoesCriticas';
 import styles from './admin.module.css';
 
 const UNIDADES = Object.values(Unidade);
-type Aba = 'metricas' | 'usuarios' | 'itens' | 'reportes';
+type Aba = 'metricas' | 'usuarios' | 'itens' | 'reportes' | 'criticas';
 
 export function AdminConsole({
   metricas,
@@ -81,6 +82,7 @@ export function AdminConsole({
           { value: 'usuarios', label: 'Usuários' },
           { value: 'itens', label: 'Itens' },
           { value: 'reportes', label: 'Reportes', badge: reportes.length },
+          { value: 'criticas', label: 'Ações críticas' },
         ]}
       />
 
@@ -91,6 +93,7 @@ export function AdminConsole({
       {aba === 'usuarios' && <AdminUsuarios initial={usuarios} unidade={unidadeFiltro} />}
       {aba === 'itens' && <AdminItens initial={itens} unidade={unidadeFiltro} foco={foco} onMutou={recarregarAlertas} />}
       {aba === 'reportes' && <AdminReportes initial={reportes} />}
+      {aba === 'criticas' && <AdminAcoesCriticas />}
     </main>
   );
 }

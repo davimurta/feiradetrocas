@@ -104,7 +104,7 @@ describeDb('Fluxo via Server Actions (recepção → produção → pedido → a
     __setMockUserId(entrada.id);
     expect((await pushProducaoAction({ id: rec.data.id })).ok).toBe(true);
 
-    // O polling da carteira busca de novo — é o que substitui o F5.
+    // O polling da carteira busca de novo, é o que substitui o F5.
     __setMockUserId(aluno.id);
     const depois = await sincronizarCarteiraAction();
     expect(depois.ok).toBe(true);

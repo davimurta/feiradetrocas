@@ -9,7 +9,7 @@ export default function setup(): void {
   const url = process.env.DATABASE_URL;
   if (!url) {
     console.warn(
-      '[tests] DATABASE_URL não definido (.env.test ausente) — testes de banco serão pulados.',
+      '[tests] DATABASE_URL não definido (.env.test ausente), testes de banco serão pulados.',
     );
     return;
   }

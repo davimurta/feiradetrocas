@@ -9,7 +9,7 @@ export function formatarDataHora(d: Date | string): string {
 
 /**
  * "há 4 min", "há 2 h", "ontem"… Na recepção o que importa é o quão velho é o item na
- * fila, não a hora exata — a hora exata continua no `title` de quem mostra.
+ * fila, não a hora exata, a hora exata continua no `title` de quem mostra.
  */
 export function tempoRelativo(d: Date | string, agora: Date = new Date()): string {
   const segundos = Math.floor((agora.getTime() - new Date(d).getTime()) / 1000);

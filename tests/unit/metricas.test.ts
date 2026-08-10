@@ -25,7 +25,7 @@ describe('resolverFiltro', () => {
 
   it('intervalo personalizado aceita data pura e datetime-local', () => {
     const f = resolverFiltro({ periodo: 'custom', de: '2026-08-01', ate: '2026-08-02T18:30' });
-    expect(f.de.getHours()).toBe(0); // meia-noite LOCAL, não UTC — o dia não escorrega
+    expect(f.de.getHours()).toBe(0); // meia-noite LOCAL, não UTC, o dia não escorrega
     expect(f.de.getDate()).toBe(1);
     expect(f.ate.getHours()).toBe(18);
   });

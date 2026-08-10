@@ -132,7 +132,7 @@ export interface PushTodosResult {
   total: number;
   creditadoTotal: number;
   falhas: number;
-  /** Ids efetivamente colocados em produção — a tela remove exatamente estes, sem refetch. */
+  /** Ids efetivamente colocados em produção: a tela remove exatamente estes, sem refetch. */
   idsOk: string[];
 }
 
@@ -150,7 +150,7 @@ export async function pushTodosProducaoAction(
     assertPapel(user, ...PAPEIS);
     const { unidade, ids } = pushLoteSchema.parse(input);
 
-    // Mesmo com ids vindos do client, relemos com `status: 'pendente'` — a seleção da tela
+    // Mesmo com ids vindos do client, relemos com `status: 'pendente'`: a seleção da tela
     // pode ter envelhecido, e o compare-and-set do domínio é a garantia final.
     const pendentes = await prisma.itemPendente.findMany({
       where: {

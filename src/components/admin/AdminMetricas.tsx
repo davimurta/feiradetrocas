@@ -108,7 +108,7 @@ export function AdminMetricas({
   const { kpis, fichas, fila } = metricas;
   const inicio = new Date(metricas.filtro.de);
   const fim = new Date(metricas.filtro.ate);
-  const periodoLegivel = `${inicio.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} — ${fim.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`;
+  const periodoLegivel = `${inicio.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} até ${fim.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`;
 
   return (
     <div className="stack">

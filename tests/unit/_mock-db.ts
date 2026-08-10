@@ -2,7 +2,7 @@ import { vi } from 'vitest';
 import type { PrismaClient } from '@prisma/client';
 
 /**
- * Mock mínimo do Prisma para testes UNITÁRIOS — sem banco real.
+ * Mock mínimo do Prisma para testes UNITÁRIOS, sem banco real.
  * `$transaction(cb)` apenas invoca o callback com o `tx` mockado (não simula rollback:
  * o unitário verifica o RAMO de decisão do domínio; a atomicidade de verdade é coberta
  * na integração). Mock artesanal (vi.fn) para não adicionar dependência.

@@ -50,7 +50,7 @@ export function Carteira({
   }, []);
 
   useEffect(() => {
-    // Aba em segundo plano não precisa de polling — no dia do evento são centenas de
+    // Aba em segundo plano não precisa de polling: no dia do evento são centenas de
     // carteiras abertas ao mesmo tempo. Ao voltar o foco, sincroniza na hora.
     let timer: ReturnType<typeof setInterval> | null = null;
 

@@ -10,7 +10,7 @@ Tudo o que a outra pessoa precisa é **Docker Desktop** (ou Docker Engine + plug
    ```bash
    cp .env.example .env
    ```
-3. Gere um `SESSION_SECRET` real e coloque no `.env` (é obrigatório — o compose recusa
+3. Gere um `SESSION_SECRET` real e coloque no `.env` (é obrigatório: o compose recusa
    subir sem ele):
    ```bash
    openssl rand -hex 32
@@ -38,7 +38,7 @@ Isso roda o `prisma/seed.mjs`. Os logins criados aparecem no log:
 docker compose logs seed
 ```
 
-O padrão é **sem** seed — um ambiente que vai virar produção não deve nascer com contas
+O padrão é **sem** seed: um ambiente que vai virar produção não deve nascer com contas
 de teste dentro.
 
 ## Criar o primeiro admin (ambiente sem seed)
@@ -71,7 +71,7 @@ está num profile. Para limpar tudo, use `docker compose --profile demo down`.
 
 ## Deploy numa plataforma (Railway, Fly, Render)
 
-**Pre-Deploy Command — use exatamente isto:**
+**Pre-Deploy Command, use exatamente isto:**
 
 ```
 /app/pre-deploy.sh
@@ -84,7 +84,7 @@ na versão exata do `package-lock.json`, com o caminho do schema explícito.
 
 Esse comando falhava por três motivos empilhados:
 
-1. `npx` baixava a CLI do registry e pegava a `latest` — prisma@7, que rejeita
+1. `npx` baixava a CLI do registry e pegava a `latest`: prisma@7, que rejeita
    `url = env("DATABASE_URL")` no datasource (`P1012`, quer `prisma.config.ts`) e é um
    major acima do `@prisma/client` 6.x que gerou estas migrations;
 2. `npx` grava cache no HOME e o container roda como o usuário não-root `feira` →
@@ -92,14 +92,14 @@ Esse comando falhava por três motivos empilhados:
 3. a CLI baixada rodava de um diretório temporário e não achava `prisma/schema.prisma`
    (`Could not find Prisma Schema`).
 
-Rodar como root resolveria só o item 2 — os outros dois continuariam. A correção foi na
+Rodar como root resolveria só o item 2; os outros dois continuariam. A correção foi na
 imagem: o `runner` carrega `prisma/` (schema + migrations) e uma árvore isolada com a CLI
 **6.x** em `/app/.prisma-cli`, e `CHECKPOINT_DISABLE=1` evita ida à rede no deploy. O
 container segue não-root.
 
 Além disso existe um atalho em `/app/node_modules/.bin/prisma` apontando para essa CLI.
 O `npx` procura o binário local antes de ir ao registry, então **`npx prisma migrate
-deploy` também funciona** — usa a 6.19.3 da imagem e não baixa nada. É rede de segurança:
+deploy` também funciona**: usa a 6.19.3 da imagem e não baixa nada. É rede de segurança:
 prefira `/app/pre-deploy.sh`, que é explícito e passa o `--schema`.
 
 Variáveis que a plataforma precisa ter:
@@ -156,7 +156,7 @@ Se aparecer `address already in use` ao subir, é isso: mude a porta no `.env` e
 | `DATABASE_URL_EXTERNO` | não | Aponta a stack para um Postgres gerenciado em vez do container |
 
 **`DATABASE_URL` não vale para o Docker.** A do seu `.env` aponta para `localhost`, que
-dentro de um container é o próprio container — o `migrate` morreria com `P1001: Can't
+dentro de um container é o próprio container, e o `migrate` morreria com `P1001: Can't
 reach database server`. Dentro do compose a URL é fixa (`@db:5432`). Para usar um banco
 externo (Railway, Neon, RDS), use `DATABASE_URL_EXTERNO`:
 
@@ -166,11 +166,11 @@ DATABASE_URL_EXTERNO="postgresql://user:senha@host:5432/banco?schema=public"
 
 ## Entregar para outra pessoa
 
-**Caminho 1 — ela roda o build (recomendado).** Mande o repositório. Ela precisa só de
+**Caminho 1, ela roda o build (recomendado).** Mande o repositório. Ela precisa só de
 Docker e dos passos de "Subir pela primeira vez". É a forma mais simples: nada de
 registry, e ela sempre compila o código que está no clone dela.
 
-**Caminho 2 — mandar a imagem pronta**, quando a outra máquina não deve compilar:
+**Caminho 2, mandar a imagem pronta**, quando a outra máquina não deve compilar:
 
 ```bash
 # na sua máquina
@@ -185,7 +185,7 @@ gunzip -c feira-app.tar.gz | docker load
 docker compose up -d          # sem --build: usa a imagem carregada
 ```
 
-**Caminho 3 — registry**, se houver um (GHCR, Docker Hub):
+**Caminho 3, registry**, se houver um (GHCR, Docker Hub):
 
 ```bash
 docker tag feiradetrocas-app:latest ghcr.io/<org>/feira-app:1.0.0
@@ -201,7 +201,7 @@ Do outro lado, troque o bloco `build:` do serviço `app` por
   cada ambiente gera o próprio segredo.
 - O volume `db-data` / um dump com dados reais de alunos, se for só para a pessoa testar.
 
-Trocar o `SESSION_SECRET` invalida todas as sessões abertas — é o comportamento esperado
+Trocar o `SESSION_SECRET` invalida todas as sessões abertas, e é o comportamento esperado
 ao migrar de ambiente.
 
 ## Backup do banco
@@ -222,7 +222,7 @@ Vale rodar o backup no fim de cada dia de feira: `down -v` apaga o volume sem pe
   engine `debian-openssl-3.0.x`. Em Alpine (musl) o Prisma pediria outro binário e o app
   quebraria em runtime com "Query engine library for current platform not found".
 - O `next.config.mjs` usa `output: 'standalone'`, então a imagem de runtime leva só o
-  servidor e as dependências realmente usadas — sem `node_modules` completo nem
+  servidor e as dependências realmente usadas, sem `node_modules` completo nem
   devDependencies.
 - `exceljs` está em `serverExternalPackages`: fica fora do bundle e é carregado pelo Node
   em runtime, na rota de exportação.

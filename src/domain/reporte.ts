@@ -10,7 +10,7 @@ export interface CriarReporteResult {
 
 /**
  * Registra um reporte do stand contra o comprador de um pedido (ex.: recusa indevida, furto).
- * O denunciado é derivado do próprio pedido — o stand não escolhe quem denunciar à mão.
+ * O denunciado é derivado do próprio pedido: o stand não escolhe quem denunciar à mão.
  */
 export async function criarReporte(
   db: Db,

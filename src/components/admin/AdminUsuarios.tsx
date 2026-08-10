@@ -123,7 +123,7 @@ function UsuarioRow({ usuario, onSalvo }: { usuario: UsuarioAdmin; onSalvo: (usu
         <DataCell label="Papel">
           <DataSelect value={papel} onChange={(e) => setPapel(e.target.value as Papel | '')} disabled={busy}>
             <option value="" disabled>
-              — selecione —
+              Selecione
             </option>
             {PAPEIS.map((p) => (
               <option key={p} value={p}>
@@ -135,7 +135,7 @@ function UsuarioRow({ usuario, onSalvo }: { usuario: UsuarioAdmin; onSalvo: (usu
         <DataCell label="Unidade">
           <DataSelect value={unidade} onChange={(e) => setUnidade(e.target.value as Unidade | '')} disabled={busy}>
             <option value="" disabled>
-              — selecione —
+              Selecione
             </option>
             {UNIDADES.map((u) => (
               <option key={u} value={u}>

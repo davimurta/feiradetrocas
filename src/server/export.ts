@@ -1,6 +1,6 @@
 // Exportação das métricas do admin em planilha (.xlsx) ou .csv.
 //
-// Roda inteiro no servidor: o browser recebe só o arquivo pronto. Duas razões —
+// Roda inteiro no servidor: o browser recebe só o arquivo pronto. Duas razões:
 // a lib de xlsx (exceljs) nunca entra no bundle do client, e as linhas brutas nunca
 // trafegam como payload RSC.
 //
@@ -310,7 +310,7 @@ async function tabelaStatus(f: FiltroMetricas): Promise<Tabela> {
   };
 }
 
-/** Aba de agregados — os mesmos números que o painel mostra, em formato chave/valor. */
+/** Aba de agregados, os mesmos números que o painel mostra, em formato chave/valor. */
 async function tabelaResumo(f: FiltroMetricas): Promise<Tabela> {
   const m = await getMetricas(f);
   const linhas: Record<string, string | number>[] = [
@@ -345,7 +345,7 @@ async function tabelaResumo(f: FiltroMetricas): Promise<Tabela> {
     ...m.reportesPorMotivo.map((r) => ({ indicador: `Reportes: ${r.label}`, valor: r.value })),
     ...m.rankingItens.map((i, n) => ({
       indicador: `Top ${n + 1} item vendido`,
-      valor: `${i.nome} — ${i.unidades} un. / ${i.fichas} fichas`,
+      valor: `${i.nome}: ${i.unidades} un. / ${i.fichas} fichas`,
     })),
     ...m.atendentes.map((a) => ({
       indicador: `Atendente: ${a.nome}`,

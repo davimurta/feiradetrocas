@@ -91,7 +91,7 @@ describe('AdminMetricas', () => {
     expect(screen.getByText('Transações no período').previousSibling).toHaveTextContent('42');
     expect(screen.getByText('Fichas emitidas').previousSibling).toHaveTextContent('500');
     expect(screen.getByText('Fichas gastas').previousSibling).toHaveTextContent('190');
-    // O primeiro render já veio pronto do RSC — refazer aqui seria uma consulta duplicada.
+    // O primeiro render já veio pronto do RSC, refazer aqui seria uma consulta duplicada.
     expect(metricasAction).not.toHaveBeenCalled();
   });
 

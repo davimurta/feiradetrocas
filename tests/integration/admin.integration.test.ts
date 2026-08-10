@@ -58,7 +58,7 @@ describeDb('Admin (integração, Postgres real)', () => {
 
     const m = await getMetricas(resolverFiltro({ periodo: '7d', unidade: 'floresta' }));
 
-    // O INNER JOIN em items descartaria este ajuste — ele não tem item.
+    // O INNER JOIN em items descartaria este ajuste, ele não tem item.
     expect(m.kpis.transacoes).toBe(1);
     expect(m.fichas.ajustes).toBe(12);
     expect(m.serie.reduce((s, p) => s + p.transacoes, 0)).toBe(1);

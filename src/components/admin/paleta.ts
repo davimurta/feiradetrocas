@@ -24,7 +24,7 @@ export const COR_STATUS: Record<string, string> = {
 export const numero = new Intl.NumberFormat('pt-BR');
 
 export function duracao(segundos: number | null): string {
-  if (segundos === null) return '—';
+  if (segundos === null) return 'n/d';
   if (segundos < 90) return `${Math.round(segundos)} s`;
   if (segundos < 5400) return `${Math.round(segundos / 60)} min`;
   return `${(segundos / 3600).toFixed(1)} h`;

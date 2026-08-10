@@ -27,7 +27,7 @@ const PASSOS = [
   {
     icon: CheckCircle,
     titulo: 'Aprove a compra',
-    texto: 'A compra aparece na sua carteira em tela cheia. Toque em Aceitar para confirmar — as fichas são debitadas na hora.',
+    texto: 'A compra aparece na sua carteira em tela cheia. Toque em Aceitar para confirmar: as fichas são debitadas na hora.',
   },
   {
     icon: ClockCounterClockwise,

@@ -6,7 +6,7 @@
 // derrubaria a página. O client só desenha o que chega.
 //
 // Unidade de uma transação: `item.unidade` quando existe, senão `user.unidade`. O
-// `ajuste_manual` não tem item — um INNER JOIN em items o descartaria silenciosamente
+// `ajuste_manual` não tem item, um INNER JOIN em items o descartaria silenciosamente
 // (era o comportamento antigo), fazendo os totais não fecharem entre gráfico e KPI.
 
 import { Prisma, type Unidade } from '@prisma/client';
@@ -108,7 +108,7 @@ const UNIDADE_SQL: Record<Granularidade, string> = { hora: 'hour', dia: 'day' };
 /**
  * `created_at` é `timestamp(3)` SEM fuso, gravado em UTC pelo Prisma. Um `AT TIME ZONE
  * <tz>` direto seria interpretado ao contrário (trataria o valor como hora local e
- * devolveria um instante), então primeiro rotulamos como UTC e só depois convertemos —
+ * devolveria um instante), então primeiro rotulamos como UTC e só depois convertemos.
  * senão os baldes de hora saem deslocados e a "hora do pico" da feira mente.
  */
 const emHorarioLocal = (coluna: string) =>
@@ -362,7 +362,7 @@ async function porCategoria(f: FiltroMetricas) {
     .sort((a, b) => b.estoque + b.vendidos - (a.estoque + a.vendidos));
 }
 
-/** Histograma de saldo dos alunos — mostra concentração de fichas paradas. */
+/** Histograma de saldo dos alunos, mostra concentração de fichas paradas. */
 async function distribuicaoSaldo(f: FiltroMetricas): Promise<FatiaSimples[]> {
   const filtroUnidade = f.unidade ? Prisma.sql`AND unidade = ${f.unidade}::"Unidade"` : Prisma.empty;
   const linhas = await prisma.$queryRaw<{ faixa: string; ordem: number; total: number }[]>(Prisma.sql`

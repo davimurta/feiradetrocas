@@ -14,7 +14,8 @@ export type DomainErrorCode =
   | 'PEDIDO_NAO_PENDENTE'
   | 'NAO_AUTENTICADO'
   | 'NAO_AUTORIZADO'
-  | 'CONTA_BLOQUEADA';
+  | 'CONTA_BLOQUEADA'
+  | 'CONFIRMACAO_INVALIDA';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;

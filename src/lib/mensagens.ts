@@ -15,6 +15,7 @@ const MENSAGENS: Record<string, string> = {
   NAO_AUTENTICADO: 'Você precisa estar identificado para fazer isso.',
   NAO_AUTORIZADO: 'Seu perfil não tem permissão para esta ação.',
   CONTA_BLOQUEADA: 'Sua conta está bloqueada. Procure a organização da feira.',
+  CONFIRMACAO_INVALIDA: 'Digite CONFIRMAR para executar esta ação.',
   REDE: 'Sem conexão com o servidor. Tente novamente.',
   VALIDACAO: 'Confira os dados informados.',
 };

@@ -46,7 +46,7 @@ const total = (it: ItemPendenteView) => it.valor * it.quantidade;
  *
  * Leitura primeiro, edição sob demanda: a versão anterior montava seis campos editáveis
  * por item, o que deixava a tela ilegível justamente quando ela mais importa (fila cheia)
- * e escondia a informação que a recepção realmente confere — de quem é o item. Aqui a
+ * e escondia a informação que a recepção realmente confere: de quem é o item. Aqui a
  * linha mostra item + aluno + fichas, e só vira formulário quando alguém pede.
  */
 export function ItensPendentes({
@@ -472,7 +472,7 @@ function LinhaEdicao({
     if (ok) onFechar();
   }
 
-  // Enter salva, Esc fecha — a recepção edita muitos itens seguidos, tirar a mão do
+  // Enter salva, Esc fecha. A recepção edita muitos itens seguidos, tirar a mão do
   // teclado a cada linha custa caro na fila.
   function aoTeclar(e: React.KeyboardEvent) {
     if (e.key === 'Escape') {

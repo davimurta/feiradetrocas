@@ -1,4 +1,4 @@
-// Filtro do painel de métricas — um único parser compartilhado pela Server Action e
+// Filtro do painel de métricas, um único parser compartilhado pela Server Action e
 // pelo Route Handler de exportação, para que gráfico e planilha nunca divirjam de
 // período. Aceita ISO completo ou `datetime-local`/`YYYY-MM-DD` (o que o <input> manda).
 

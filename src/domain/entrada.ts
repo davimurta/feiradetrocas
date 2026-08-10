@@ -30,7 +30,7 @@ export interface PendenteResumo {
 /**
  * Recebe um item na recepção e o deixa PENDENTE de produção: o aluno ainda NÃO é creditado
  * e o item não entra no catálogo. O crédito e o estoque só acontecem no "push" (colocarEmProducao).
- * Cada recepção gera uma linha própria (sem stacking aqui — o stacking é no push).
+ * Cada recepção gera uma linha própria (sem stacking aqui; o stacking é no push).
  */
 export async function registrarEntrada(db: Db, input: RegistrarEntradaInput): Promise<PendenteResumo> {
   const quantidade = input.quantidade ?? 1;
@@ -148,7 +148,7 @@ export interface ColocarEmProducaoResult {
 
 /**
  * "Push" de um item pendente para produção: credita o aluno, soma ao estoque (stacking por
- * nome+valor+unidade) e lança o crédito no extrato — tudo atômico. A guarda de status
+ * nome+valor+unidade) e lança o crédito no extrato. Tudo atômico. A guarda de status
  * (compare-and-set) garante que um mesmo pendente não seja produzido/creditado duas vezes.
  */
 export async function colocarEmProducao(

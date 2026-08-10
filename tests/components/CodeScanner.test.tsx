@@ -47,7 +47,7 @@ describe('CodeScanner (leitura de QR no stand)', () => {
     darCamera(async () => faseStream());
     render(<CodeScanner label="Carteira do comprador" onSubmit={vi.fn()} />);
 
-    // Antes o botão era escondido quando faltava `BarcodeDetector` — some em todo iPhone.
+    // Antes o botão era escondido quando faltava `BarcodeDetector`, some em todo iPhone.
     expect('BarcodeDetector' in window).toBe(false);
     expect(await screen.findByRole('button', { name: BOTAO_CAMERA })).toBeInTheDocument();
   });

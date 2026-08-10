@@ -17,8 +17,8 @@ interface Leitor {
 /**
  * Escolhe como decodificar o QR.
  *
- * `BarcodeDetector` é nativo e rápido, mas só existe no Chrome/Edge (Android e desktop) —
- * em Safari (todo iPhone) e Firefox ele não existe. Antes o botão da câmera era escondido
+ * `BarcodeDetector` é nativo e rápido, mas só existe no Chrome/Edge (Android e desktop).
+ * Em Safari (todo iPhone) e Firefox ele não existe. Antes o botão da câmera era escondido
  * quando faltava essa API, o que fazia o scanner sumir justamente nos aparelhos mais comuns
  * no balcão. Sem ela, caímos no jsQR, que decodifica em JS puro a partir do canvas.
  */
@@ -73,7 +73,7 @@ export function CodeScanner({
 
   // O <video> e o <canvas> ficam SEMPRE montados (escondidos por CSS). Montá-los junto com
   // o estado `scanning` fazia `videoRef.current` ser null no instante em que a câmera
-  // abria — o React ainda não tinha renderizado o elemento —, e a câmera morria com
+  // abria, porque o React ainda não tinha renderizado o elemento, e a câmera morria com
   // "não foi possível abrir".
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -103,7 +103,7 @@ export function CodeScanner({
     setCamError(null);
 
     // Fora de contexto seguro o navegador nem oferece a câmera. Acontece ao abrir o app
-    // pelo IP da rede local em HTTP — vale dizer o porquê em vez de "erro ao abrir".
+    // pelo IP da rede local em HTTP. Vale dizer o porquê em vez de "erro ao abrir".
     if (typeof window !== 'undefined' && !window.isSecureContext) {
       setCamError(
         'A câmera só funciona em HTTPS (ou em localhost). Abra o app por HTTPS ou digite o código.',

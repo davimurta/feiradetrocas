@@ -14,7 +14,7 @@ const mono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Feira de Trocas — COTEMIG',
+  title: 'Feira de Trocas · COTEMIG',
   description: 'Economia de fichas da Feira de Trocas do COTEMIG.',
 };
 

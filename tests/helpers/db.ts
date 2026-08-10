@@ -6,7 +6,7 @@ export const DB_ENABLED = Boolean(process.env.DATABASE_URL);
 
 /**
  * `describe` que se auto-pula quando não há banco de teste configurado, para que
- * `npm run test:integration` sem banco no ar não quebre com ruído — apenas pula.
+ * `npm run test:integration` sem banco no ar não quebre com ruído, apenas pula.
  */
 export const describeDb = DB_ENABLED ? describe : describe.skip;
 

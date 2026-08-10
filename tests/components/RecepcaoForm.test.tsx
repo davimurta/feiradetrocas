@@ -39,7 +39,7 @@ describe('RecepcaoForm (recepção)', () => {
     await user.click(screen.getByRole('button', { name: 'Cadastrar' }));
 
     expect(receber).toHaveBeenCalledWith({ matricula: '20240099', nome: 'Livro', categoria: 'Livros', valor: 10, unidade: 'barroca' });
-    expect(await screen.findByRole('status')).toHaveTextContent(/aguardando produção/);
+    expect(await screen.findByRole('status')).toHaveTextContent(/Aguardando produção/);
   });
 
   it('envia a descrição preenchida para a action', async () => {

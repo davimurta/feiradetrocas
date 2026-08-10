@@ -1,4 +1,4 @@
-# Relatório — colocar em produção com dados reais
+# Relatório: colocar em produção com dados reais
 
 Estado atual: app funcional (login email/senha real, aprovação em duas pontas, unidades
 Barroca/Floresta, painel admin). Falta só configuração de infraestrutura + OAuth do Google.
@@ -8,7 +8,7 @@ Este documento é o passo a passo.
 
 ## 1. Banco de dados real
 
-Hoje o banco é um **Postgres local em Docker** (porta 5433) — bom para desenvolver, não para
+Hoje o banco é um **Postgres local em Docker** (porta 5433): bom para desenvolver, não para
 produção. Para dados reais:
 
 1. **Provisionar um Postgres gerenciado** (qualquer um): Neon, Supabase, Railway, Render,
@@ -19,7 +19,7 @@ produção. Para dados reais:
    SESSION_SECRET="<valor aleatório forte>"   # gere com: openssl rand -hex 32
    NODE_ENV="production"
    ```
-   O `SESSION_SECRET` assina o cookie de sessão — **troque** o valor de dev.
+   O `SESSION_SECRET` assina o cookie de sessão; **troque** o valor de dev.
    Em produção o cookie já sai como `secure` (só trafega em HTTPS).
 3. Aplicar as migrations no banco novo:
    ```
@@ -52,7 +52,7 @@ Ferramentas: TablePlus, DBeaver, pgAdmin, ou `psql`.
   ```
 - **De outro computador na mesma rede:** o container já expõe a porta (`-p 5433:5432`);
   conecte em `IP_DA_MAQUINA:5433` (e libere a porta 5433 no firewall da máquina).
-- **Banco gerenciado (produção):** use a connection string que o provedor fornece — ela já
+- **Banco gerenciado (produção):** use a connection string que o provedor fornece: ela já
   vem com host público + SSL.
 
 ### b) Outro sistema acessar o banco
@@ -67,7 +67,7 @@ Ferramentas: TablePlus, DBeaver, pgAdmin, ou `psql`.
 
 Hoje o botão do Google é **simulado** (provisiona pelo email informado). A lógica de domínio
 `entrarComGoogle({ email, nome })` em `src/domain/auth.ts` **já existe e já provisiona/vincula
-a conta** — só falta a camada de OAuth que entrega o email/nome verificados pelo Google.
+a conta**, só falta a camada de OAuth que entrega o email/nome verificados pelo Google.
 
 Passos:
 
@@ -84,10 +84,10 @@ Passos:
    GOOGLE_CLIENT_SECRET="..."
    ```
 6. **Implementar o fluxo OAuth.** Duas opções:
-   - **Auth.js (NextAuth)** — adiciona 1 dependência mas resolve o OAuth. Configura o provider
+   - **Auth.js (NextAuth)**: adiciona 1 dependência mas resolve o OAuth. Configura o provider
      Google e, no callback, chama `entrarComGoogle({ email, nome })` (nosso domínio) para
      provisionar/vincular, reaproveitando as regras de unidade e de conta pendente.
-   - **Manual (sem dependência)** — uma rota `/api/auth/google` redireciona para o Google, e
+   - **Manual (sem dependência)**: uma rota `/api/auth/google` redireciona para o Google, e
      `/api/auth/callback/google` troca o `code` por token, lê o perfil, chama `entrarComGoogle`
      + `setSession`. Mais código, zero dependência.
 7. (Opcional) Restringir ao domínio do colégio: parâmetro `hd=cotemig.com.br` e validar o
@@ -108,10 +108,10 @@ Passos:
 - [ ] **Trocar o seed de demonstração** pelos dados reais de staff. Remover os logins de teste.
 - [ ] **HTTPS** no domínio de produção (o cookie de sessão já sai `secure` quando
       `NODE_ENV=production`).
-- [ ] (Opcional) **Bloquear conta pendente também nas Server Actions** — hoje o bloqueio é no
+- [ ] (Opcional) **Bloquear conta pendente também nas Server Actions**: hoje o bloqueio é no
       nível de página (guard). A UI já não deixa a conta pendente chegar nas ações, então é
       hardening, não obrigatório.
-- [ ] (Opcional) **Tempo real** — a aprovação da compra usa _polling_ (stand a cada 2,5s,
+- [ ] (Opcional) **Tempo real**: a aprovação da compra usa _polling_ (stand a cada 2,5s,
       carteira a cada 4s). Funciona bem no evento; dá para trocar por SSE/websocket depois sem
       mexer no domínio.
 - [ ] (Opcional) **Integração com a API do colégio** (mencionada na Fase 1) para validar
@@ -125,4 +125,4 @@ Passos:
 1. Postgres gerenciado + `DATABASE_URL` + `SESSION_SECRET` + `prisma migrate deploy`.
 2. Cadastrar o admin (seed ou manual) e liberar/cadastrar os atendentes por unidade.
 3. Deploy do app com as env vars.
-4. (Se quiser Google) criar as credenciais OAuth e ligar o provider — o resto da lógica já está pronto.
+4. (Se quiser Google) criar as credenciais OAuth e ligar o provider: o resto da lógica já está pronto.

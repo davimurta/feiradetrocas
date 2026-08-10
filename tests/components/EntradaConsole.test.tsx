@@ -129,7 +129,7 @@ describe('EntradaConsole (sincronização cadastro ↔ pendentes)', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('1 itens em produção');
     expect(screen.queryByText('Caneta')).not.toBeInTheDocument();
     expect(screen.getByText('Borracha')).toBeInTheDocument();
-    // A lista foi acertada com o retorno da própria action — nada de segunda consulta.
+    // A lista foi acertada com o retorno da própria action, nada de segunda consulta.
     expect(listarPendentesAction).not.toHaveBeenCalled();
   });
 });

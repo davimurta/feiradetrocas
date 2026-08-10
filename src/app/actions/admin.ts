@@ -112,7 +112,7 @@ export async function excluirItemAction(
     return ok({ id });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003') {
-      return fail(new DomainError('ITEM_INDISPONIVEL', 'Item tem histórico de transações — não pode ser excluído. Zere o estoque.'));
+      return fail(new DomainError('ITEM_INDISPONIVEL', 'Item tem histórico de transações e não pode ser excluído. Zere o estoque.'));
     }
     return fail(err);
   }
