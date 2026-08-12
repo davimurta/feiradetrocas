@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
+import { GoogleLogo } from '@phosphor-icons/react/dist/ssr';
 import { getCurrentUser, rotaInicial } from '@/lib/auth';
+import { googleHabilitado } from '@/lib/google';
 import { logoutAction } from '@/app/actions/auth';
 import { Alert, Button } from '@/components/ui';
 import { Brand } from '@/components/Brand';
@@ -33,6 +35,11 @@ export default async function LoginPage() {
                 <p className={styles.sub}>Entre para começar a trocar</p>
               </div>
               <LoginForm />
+              {googleHabilitado() && (
+                <a className={styles.google} href="/api/auth/google/iniciar?modo=login">
+                  <GoogleLogo size={18} weight="bold" /> Entrar com Google
+                </a>
+              )}
             </>
           )}
         </div>

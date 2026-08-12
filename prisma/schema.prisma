@@ -72,9 +72,29 @@ model User {
   /// Conta bloqueada pelo admin (via um reporte). Não faz login nem opera enquanto true.
   bloqueado Boolean @default(false)
 
+  /// Versão da sessão. Vai assinada dentro do cookie; se divergir da linha do banco, a
+  /// sessão é rejeitada. Incrementar aqui derruba todos os cookies daquele usuário
+  /// (logout, bloqueio pelo admin, mudança de papel, troca de senha).
+  sessionVersion Int @default(0) @map("session_version")
+
+  /// Vínculo com o portal do Cotemig, provado uma única vez no cadastro. A API v1.3 não
+  /// devolve campo `id`, então o identificador estável é o próprio `usuario` do portal
+  /// (a matrícula), normalizado em minúsculas. Único: um aluno, uma conta na feira.
+  /// A senha do portal NUNCA é guardada aqui nem em lugar nenhum.
+  cotemigId      String?   @unique @map("cotemig_id")
+  cotemigUsuario String?   @map("cotemig_usuario")
+  vinculadoEm    DateTime? @map("vinculado_em")
+
+  /// Convite que originou a conta, quando ela não veio de uma matrícula do Cotemig.
+  /// Serve de auditoria: dá para saber por qual código cada visitante entrou.
+  conviteId String?  @map("convite_id")
+  convite   Convite? @relation(fields: [conviteId], references: [id])
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  contasExternas       ContaExterna[]
+  convitesCriados      Convite[]      @relation("ConviteAutor")
   transacoes           Transacao[]    @relation("TransacoesDoUsuario")
   atendimentos         Transacao[]    @relation("TransacoesDoAtendente")
   pedidosComoComprador Pedido[]       @relation("PedidoComprador")
@@ -223,4 +243,80 @@ model Reporte {
 
   @@index([createdAt])
   @@map("reportes")
+}
+
+/// Código de convite para quem não tem matrícula no Cotemig (professores, visitantes,
+/// convidados). É multiuso e vale por um período: a organização gera um punhado deles e
+/// distribui, em vez de gerar um por pessoa. Sem código válido, nenhuma conta nasce por
+/// este caminho, o que torna o cadastro imune a cadastro em massa.
+model Convite {
+  id        String  @id @default(cuid())
+  codigo    String  @unique
+  descricao String?
+  unidade   Unidade
+
+  expiraEm DateTime @map("expira_em")
+  /// Teto de usos. `null` significa ilimitado dentro da validade.
+  maxUsos  Int?     @map("max_usos")
+  usos     Int      @default(0)
+  ativo    Boolean  @default(true)
+
+  criadoPorId String @map("criado_por_id")
+  criadoPor   User   @relation("ConviteAutor", fields: [criadoPorId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  usuarios User[]
+
+  @@index([ativo, expiraEm])
+  @@map("convites")
+}
+
+/// Vínculo com um provedor externo de identidade (hoje só Google). Fica em modelo separado
+/// para que uma conta possa ter mais de um provedor sem inchar `users`. O par
+/// (provider, providerAccountId) é único: uma identidade externa aponta para uma conta só.
+model ContaExterna {
+  id                String @id @default(cuid())
+  provider          String
+  providerAccountId String @map("provider_account_id")
+  email             String?
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("contas_externas")
+}
+
+/// Trilha de auditoria das tentativas de autenticação. Alimenta a tela do admin e serve
+/// para detectar volume anômalo contra a API do colégio. Nunca guarda senha.
+model TentativaAuth {
+  id            String   @id @default(cuid())
+  escopo        String
+  identificador String
+  ip            String?
+  sucesso       Boolean
+  motivo        String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([escopo, identificador, createdAt])
+  @@index([createdAt])
+  @@map("tentativas_auth")
+}
+
+/// Balde de rate limiting. A contagem é incrementada por um único INSERT ... ON CONFLICT,
+/// nunca por leitura seguida de escrita no JavaScript, para não perder contagem sob corrida.
+model BaldeRate {
+  chave        String    @id
+  escopo       String
+  falhas       Int       @default(0)
+  janelaInicio DateTime  @map("janela_inicio")
+  bloqueadoAte DateTime? @map("bloqueado_ate")
+  atualizadoEm DateTime  @map("atualizado_em")
+
+  @@index([atualizadoEm])
+  @@map("baldes_rate")
 }

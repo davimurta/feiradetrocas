@@ -3,10 +3,21 @@ import { isDomainError } from '@/lib/errors';
 
 export type ActionResult<T> =
   | { ok: true; data: T }
-  | { ok: false; error: { code: string; message: string } };
+  | { ok: false; error: { code: string; message: string; retryAfter?: number } };
 
 export function ok<T>(data: T): ActionResult<T> {
   return { ok: true, data };
+}
+
+export function falhaRate(segundos: number): ActionResult<never> {
+  return {
+    ok: false,
+    error: {
+      code: 'MUITAS_TENTATIVAS',
+      message: 'Muitas tentativas. Aguarde antes de tentar de novo.',
+      retryAfter: segundos,
+    },
+  };
 }
 
 export function fail(err: unknown): never | ActionResult<never> {

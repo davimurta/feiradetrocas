@@ -54,20 +54,64 @@ npm run dev
 > produção**: seria um admin com senha conhecida. Em produção, crie a conta com
 > `node prisma/criar-admin.mjs <email> <senha>`.
 
-`SESSION_SECRET` é obrigatório em produção: sem ele o app lança erro em vez de assinar as
-sessões com o valor de fallback, que está neste repositório público e permitiria forjar o
+`SESSION_SECRET` é obrigatório em produção: sem ele o app lança erro no boot em vez de assinar
+as sessões com o valor de fallback, que está neste repositório público e permitiria forjar o
 cookie de qualquer conta.
+
+## Como uma conta de aluno nasce
+
+O login **não** cria conta. Existem dois caminhos, e os dois passam pelo colégio:
+
+1. **Cadastro em [`/cadastro`](src/app/cadastro/page.tsx).** O aluno informa usuário e senha do
+   portal do Cotemig, e o servidor confirma o vínculo com um `GET /v1/perfil`. A senha do
+   portal é usada uma vez e descartada: não é armazenada, nem embaralhada, nem registrada em
+   log. Confirmado o vínculo, ele escolhe a senha que vai usar na feira. Detalhes em
+   [docs/AUTH-COTEMIG.md](docs/AUTH-COTEMIG.md).
+2. **Pré-provisionamento pela recepção.** Ao receber um item de uma matrícula ainda sem conta,
+   a recepção cria a conta para poder creditar. Essa conta fica sem senha até o próprio aluno
+   reivindicá-la pelo cadastro, provando o vínculo. Não existe outro jeito de assumi-la.
+
+Quem **não tem matrícula** (professores, funcionários, visitantes) entra por **código de
+convite**. O admin gera o código na aba Convites, escolhendo a unidade, a validade e um teto
+opcional de usos, e distribui para o grupo. O mesmo código serve para várias pessoas até
+expirar, então não é preciso gerar um por visitante. Sem código, nenhuma conta nasce por esse
+caminho, o que torna o cadastro imune a criação em massa.
+
+Contas de equipe (`atendente_entrada`, `atendente_stand`, `admin`) não se auto-cadastram: são
+criadas por um admin ou por `node prisma/criar-admin.mjs`.
+
+## Proteção contra tentativa em massa
+
+Rate limiting no próprio Postgres, sem Redis, com incremento atômico em um único
+`INSERT ... ON CONFLICT` para não perder contagem sob corrida.
+
+A chave é a **identidade**, não o IP. No dia da feira quase todo mundo sai pelo mesmo IP
+público da rede do colégio, e limitar por volume de requisições por IP derrubaria o evento
+inteiro. O limite por IP existe, conta só falhas, tem teto alto e vem **desligado** até
+`PROXIES_CONFIAVEIS` estar preenchido, porque sem saber quantos proxies existem à frente o
+`x-forwarded-for` é forjável.
+
+Padrões: 5 falhas de login por conta em 15 minutos, bloqueio de 5 minutos dobrando a cada
+falha extra até o teto de 1 hora. O cadastro é mais duro (3 falhas, bloqueio de 15 minutos)
+porque cada tentativa ali bate na API do colégio e pode bloquear a conta do aluno no portal.
+Tudo configurável por variável de ambiente.
+
+A resposta de login é idêntica para conta existente e inexistente, e o custo do scrypt é pago
+nos dois casos para não vazar a diferença pelo tempo. O admin vê as tentativas e desbloqueia
+contas manualmente na aba **Acessos**.
 
 ## Papéis e telas
 
 | Rota | Quem acessa | O que faz |
 |---|---|---|
-| [`/login`](src/app/login/page.tsx) | público | Entrar por email e senha; email novo cria conta de aluno |
+| [`/login`](src/app/login/page.tsx) | público | Entrar por email e senha de conta já existente |
+| [`/cadastro`](src/app/cadastro/page.tsx) | público | Criar conta: vínculo com o Cotemig ou código de convite |
+| [`/conta`](src/app/conta/page.tsx) | logado | Vínculo do aluno e login com Google (atrás da flag) |
 | [`/`](src/app/page.tsx) | logado | Só redireciona para a tela inicial do papel |
 | [`/carteira`](src/app/carteira/page.tsx) | logado | Saldo, QR pessoal, histórico e aprovação de compras |
 | [`/entrada`](src/app/entrada/page.tsx) | recepção / admin | Cadastro de itens e fila de pendentes |
 | [`/stand`](src/app/stand/page.tsx) | stand / admin | Caixa: monta o pedido pelo catálogo |
-| [`/admin`](src/app/admin/page.tsx) | admin | Métricas, usuários, itens, reportes e exportação |
+| [`/admin`](src/app/admin/page.tsx) | admin | Métricas, usuários, itens, reportes, convites, acessos e exportação |
 | [`/pendente`](src/app/pendente/page.tsx) | conta pendente | Espera o admin definir papel e unidade |
 
 Duas **unidades** (campi): `barroca` e `floresta`. As telas operacionais filtram por
@@ -144,7 +188,9 @@ Prisma Client                  src/lib/prisma.ts   singleton
   testado contra um Postgres de verdade, com promessas concorrentes disputando a última
   unidade e o último saldo.
 - **Auth próprio**, sem NextAuth: cookie assinado com HMAC-SHA256 e senha com scrypt, ambos
-  da biblioteca padrão do Node.
+  da biblioteca padrão do Node. O cookie carrega `userId` e `sessionVersion`, nunca o papel:
+  papel, bloqueio e pendência são lidos do banco a cada requisição, e incrementar
+  `sessionVersion` derruba na hora todos os cookies daquela conta.
 
 Pastas: `src/app` (rotas e actions), `src/domain` (regra), `src/lib` (infra), `src/server`
 (leituras), `src/components` (kit `ui/` + uma pasta por feature). Nomenclatura em português,

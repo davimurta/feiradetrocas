@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { randomBytes } from 'node:crypto';
 
 // E2E de UI: browser real (Chromium) contra o app rodando no banco de TESTE (feira_test).
 // Carrega .env.test para descobrir a DATABASE_URL de teste e injeta no servidor e no setup.
@@ -10,6 +11,10 @@ try {
 
 const DATABASE_URL = process.env.DATABASE_URL ?? '';
 const PORT = 3210;
+
+// O servidor do e2e sobe em modo produção, onde o boot exige um SESSION_SECRET real.
+// Gerar um por execução evita guardar um segredo longo e fixo no repositório.
+const SESSION_SECRET = randomBytes(32).toString('hex');
 
 export default defineConfig({
   testDir: './tests/e2e-ui',
@@ -34,6 +39,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     reuseExistingServer: false,
     timeout: 180_000,
-    env: { DATABASE_URL, PORT: String(PORT) },
+    env: { DATABASE_URL, PORT: String(PORT), SESSION_SECRET },
   },
 });

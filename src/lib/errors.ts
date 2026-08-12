@@ -15,7 +15,12 @@ export type DomainErrorCode =
   | 'NAO_AUTENTICADO'
   | 'NAO_AUTORIZADO'
   | 'CONTA_BLOQUEADA'
-  | 'CONFIRMACAO_INVALIDA';
+  | 'CONFIRMACAO_INVALIDA'
+  | 'MUITAS_TENTATIVAS'
+  | 'CADASTRO_INDISPONIVEL'
+  | 'CONFLITO_CADASTRO'
+  | 'CONVITE_INVALIDO'
+  | 'EMAIL_EM_USO';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;

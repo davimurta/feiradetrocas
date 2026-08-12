@@ -145,7 +145,7 @@ export async function editarUsuarioAction(
     const { id, ...dados } = editarUsuarioSchema.parse(input);
     const user = await prisma.user.update({
       where: { id },
-      data: { ...dados, pendente: false },
+      data: { ...dados, pendente: false, sessionVersion: { increment: 1 } },
       select: { id: true, nome: true, email: true, papel: true, unidade: true, saldo: true, codigoCarteira: true, pendente: true },
     });
     return ok(user);

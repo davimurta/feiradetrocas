@@ -16,6 +16,6 @@ export const describeDb = DB_ENABLED ? describe : describe.skip;
  */
 export async function resetDb(prisma: PrismaClient): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "reportes", "itens_pendentes", "transacoes", "items", "users" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "reportes", "itens_pendentes", "transacoes", "items", "users", "convites", "contas_externas", "tentativas_auth", "baldes_rate" RESTART IDENTITY CASCADE',
   );
 }

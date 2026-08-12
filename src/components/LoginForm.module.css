@@ -9,3 +9,11 @@
 .hint {
   font-size: 0.82rem;
 }
+.hint a {
+  color: var(--green-text);
+  font-weight: 600;
+}
+.contador {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+}

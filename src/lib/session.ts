@@ -1,16 +1,19 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { validarSegredo, SEGREDO_DEV } from './segredo';
 
 const COOKIE = 'feira_session';
 
 function secret(): string {
   const valor = process.env.SESSION_SECRET;
-  if (valor) return valor;
   if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      'SESSION_SECRET não definido. Defina um valor aleatório (node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))") antes de subir em produção.',
-    );
+    const problema = validarSegredo(valor);
+    if (problema) {
+      throw new Error(
+        `${problema} Gere um valor aleatório com: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`,
+      );
+    }
   }
-  return 'dev-inseguro-troque-em-producao';
+  return valor || SEGREDO_DEV;
 }
 
 function assinar(valor: string): string {
@@ -30,10 +33,15 @@ function verificar(token: string): string | null {
   return valor;
 }
 
-export async function setSession(userId: string): Promise<void> {
+export interface SessaoLida {
+  userId: string;
+  versao: number;
+}
+
+export async function setSession(userId: string, versao: number): Promise<void> {
   const { cookies } = await import('next/headers');
   const store = await cookies();
-  store.set(COOKIE, assinar(userId), {
+  store.set(COOKIE, assinar(`${userId}.${versao}`), {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
@@ -48,12 +56,24 @@ export async function clearSession(): Promise<void> {
   store.delete(COOKIE);
 }
 
-export async function readSessionUserId(): Promise<string | null> {
+export async function readSession(): Promise<SessaoLida | null> {
   try {
     const { cookies } = await import('next/headers');
     const store = await cookies();
     const token = store.get(COOKIE)?.value;
-    return token ? verificar(token) : null;
+    if (!token) return null;
+
+    const payload = verificar(token);
+    if (!payload) return null;
+
+    const corte = payload.lastIndexOf('.');
+    if (corte < 0) return null;
+
+    const userId = payload.slice(0, corte);
+    const versao = Number(payload.slice(corte + 1));
+    if (!userId || !Number.isInteger(versao) || versao < 0) return null;
+
+    return { userId, versao };
   } catch {
     return null;
   }

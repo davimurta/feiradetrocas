@@ -40,7 +40,14 @@ export async function definirBloqueio(
   input: { userId: string; bloqueado: boolean },
 ): Promise<{ id: string; bloqueado: boolean }> {
   const user = await db.user
-    .update({ where: { id: input.userId }, data: { bloqueado: input.bloqueado }, select: { id: true, bloqueado: true } })
+    .update({
+      where: { id: input.userId },
+      data: {
+        bloqueado: input.bloqueado,
+        ...(input.bloqueado ? { sessionVersion: { increment: 1 } } : {}),
+      },
+      select: { id: true, bloqueado: true },
+    })
     .catch(() => null);
   if (!user) throw new DomainError('ALUNO_INEXISTENTE', 'Usuário não encontrado.');
   return user;

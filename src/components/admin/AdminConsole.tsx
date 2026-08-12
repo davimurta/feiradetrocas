@@ -14,10 +14,12 @@ import { AdminItens } from './AdminItens';
 import { AdminUsuarios } from './AdminUsuarios';
 import { AdminReportes } from './AdminReportes';
 import { AdminAcoesCriticas } from './AdminAcoesCriticas';
+import { AdminAcessos } from './AdminAcessos';
+import { AdminConvites } from './AdminConvites';
 import styles from './admin.module.css';
 
 const UNIDADES = Object.values(Unidade);
-type Aba = 'metricas' | 'usuarios' | 'itens' | 'reportes' | 'criticas';
+type Aba = 'metricas' | 'usuarios' | 'itens' | 'reportes' | 'convites' | 'acessos' | 'criticas';
 
 export function AdminConsole({
   metricas,
@@ -82,6 +84,8 @@ export function AdminConsole({
           { value: 'usuarios', label: 'Usuários' },
           { value: 'itens', label: 'Itens' },
           { value: 'reportes', label: 'Reportes', badge: reportes.length },
+          { value: 'convites', label: 'Convites' },
+          { value: 'acessos', label: 'Acessos' },
           { value: 'criticas', label: 'Ações críticas' },
         ]}
       />
@@ -93,6 +97,8 @@ export function AdminConsole({
       {aba === 'usuarios' && <AdminUsuarios initial={usuarios} unidade={unidadeFiltro} />}
       {aba === 'itens' && <AdminItens initial={itens} unidade={unidadeFiltro} foco={foco} onMutou={recarregarAlertas} />}
       {aba === 'reportes' && <AdminReportes initial={reportes} />}
+      {aba === 'convites' && <AdminConvites />}
+      {aba === 'acessos' && <AdminAcessos />}
       {aba === 'criticas' && <AdminAcoesCriticas />}
     </main>
   );

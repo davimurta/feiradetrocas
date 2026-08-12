@@ -46,3 +46,20 @@
   flex-direction: column;
   gap: 16px;
 }
+.google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  border: 1.5px solid var(--input-bd);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.google:hover {
+  border-color: var(--green-soft);
+  background: var(--accent-bg);
+}

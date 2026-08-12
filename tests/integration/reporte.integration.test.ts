@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { criarReporte, definirBloqueio } from '@/domain/reporte';
 import { criarPedido } from '@/domain/pedido';
 import { entrarComSenha } from '@/domain/auth';
+import { hashSenha } from '@/lib/password';
 import { listarReportes } from '@/server/queries';
 import { describeDb } from '../helpers/db';
 import { criarUsuario, criarItem, criarAtendente } from '../helpers/factories';
@@ -29,14 +30,27 @@ describeDb('Reportes / bloqueio (integração, Postgres real)', () => {
   });
 
   it('definirBloqueio impede o login por senha da conta bloqueada', async () => {
-    const u = await criarUsuario({ email: 'bloq@aluno.cotemig.com.br', senhaHash: null, provider: 'password' });
+    process.env.SCRYPT_N = '16384';
+    const u = await criarUsuario({
+      email: 'bloq@aluno.cotemig.com.br',
+      senhaHash: await hashSenha('segredo'),
+      provider: 'password',
+    });
 
     await definirBloqueio(prisma, { userId: u.id, bloqueado: true });
     await expect(entrarComSenha(prisma, { email: 'bloq@aluno.cotemig.com.br', senha: 'segredo' })).rejects.toMatchObject({ code: 'CONTA_BLOQUEADA' });
 
-    // Desbloqueado volta a poder entrar (cria a senha no primeiro acesso).
     await definirBloqueio(prisma, { userId: u.id, bloqueado: false });
     const logado = await entrarComSenha(prisma, { email: 'bloq@aluno.cotemig.com.br', senha: 'segredo' });
     expect(logado.id).toBe(u.id);
+  });
+
+  it('bloquear derruba as sessões abertas da conta', async () => {
+    const u = await criarUsuario({ email: 'derruba@aluno.cotemig.com.br' });
+    expect(u.sessionVersion).toBe(0);
+
+    await definirBloqueio(prisma, { userId: u.id, bloqueado: true });
+    const bloqueado = await prisma.user.findUniqueOrThrow({ where: { id: u.id } });
+    expect(bloqueado.sessionVersion).toBe(1);
   });
 });

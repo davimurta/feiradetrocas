@@ -1,0 +1,97 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--card-bd);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+}
+.secaoTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+}
+.aviso {
+  display: flex;
+  gap: 10px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.aviso svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--green);
+}
+.aviso strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.submit {
+  margin-top: 2px;
+}
+.rodape {
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--muted);
+}
+.rodape a {
+  color: var(--green-text);
+  font-weight: 600;
+}
+.contador {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--f-mono);
+}
+
+.seletor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 5px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bd);
+  border-radius: var(--radius);
+}
+.opcao,
+.opcaoAtiva {
+  min-height: 42px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: var(--f-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.opcao:hover:not(:disabled) {
+  color: var(--ink);
+}
+.opcaoAtiva {
+  background: var(--surface);
+  color: var(--green-text);
+  box-shadow: var(--shadow-sm);
+}
+.opcao:disabled,
+.opcaoAtiva:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+.campoCodigo input {
+  font-family: var(--f-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}

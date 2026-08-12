@@ -1,7 +1,7 @@
 import type { PrismaClient, User, Unidade } from '@prisma/client';
 import { Papel, Prisma } from '@prisma/client';
 import { DomainError } from '@/lib/errors';
-import { hashSenha, verificarSenha } from '@/lib/password';
+import { hashSenha, verificarSenha, precisaRehash, consumirTempoDeSenha } from '@/lib/password';
 
 type Db = PrismaClient;
 
@@ -75,6 +75,10 @@ async function provisionar(
   }
 }
 
+function credencialInvalida(): DomainError {
+  return new DomainError('CREDENCIAL_INVALIDA', 'Email ou senha incorretos.');
+}
+
 export async function entrarComSenha(
   db: Db,
   input: { email: string; senha: string },
@@ -82,28 +86,36 @@ export async function entrarComSenha(
   const email = input.email.trim().toLowerCase();
   const existente = await db.user.findUnique({ where: { email } });
 
-  if (existente) {
-    if (existente.bloqueado) {
-      throw new DomainError('CONTA_BLOQUEADA', 'Sua conta está bloqueada.');
-    }
-    if (existente.senhaHash) {
-      if (!(await verificarSenha(input.senha, existente.senhaHash))) {
-        throw new DomainError('CREDENCIAL_INVALIDA', 'Email ou senha incorretos.');
-      }
-      return existente;
-    }
-    if (existente.provider === 'google') {
-      throw new DomainError('CREDENCIAL_INVALIDA', 'Esta conta entra pelo Google.');
-    }
-    const senhaHash = await hashSenha(input.senha);
-    return db.user.update({
-      where: { id: existente.id },
-      data: { senhaHash, provider: 'password' },
-    });
+  if (!existente || !existente.senhaHash) {
+    await consumirTempoDeSenha(input.senha);
+    throw credencialInvalida();
   }
 
+  if (!(await verificarSenha(input.senha, existente.senhaHash))) {
+    throw credencialInvalida();
+  }
+
+  if (existente.bloqueado) {
+    throw new DomainError('CONTA_BLOQUEADA', 'Sua conta está bloqueada.');
+  }
+
+  if (precisaRehash(existente.senhaHash)) {
+    const senhaHash = await hashSenha(input.senha);
+    return db.user.update({ where: { id: existente.id }, data: { senhaHash } });
+  }
+
+  return existente;
+}
+
+export async function definirSenhaLocal(
+  db: Db,
+  input: { userId: string; senha: string },
+): Promise<User> {
   const senhaHash = await hashSenha(input.senha);
-  return provisionar(db, { email, senhaHash, provider: 'password' });
+  return db.user.update({
+    where: { id: input.userId },
+    data: { senhaHash, provider: 'password', sessionVersion: { increment: 1 } },
+  });
 }
 
 export async function garantirAluno(

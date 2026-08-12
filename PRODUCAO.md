@@ -63,40 +63,52 @@ Ferramentas: TablePlus, DBeaver, pgAdmin, ou `psql`.
 
 ---
 
-## 3. Login com Google (OAuth real)
+## 3. Login com Google (opcional, desligado por padrão)
 
-Hoje o botão do Google é **simulado** (provisiona pelo email informado). A lógica de domínio
-`entrarComGoogle({ email, nome })` em `src/domain/auth.ts` **já existe e já provisiona/vincula
-a conta**, só falta a camada de OAuth que entrega o email/nome verificados pelo Google.
+O fluxo OAuth já está implementado, atrás de `GOOGLE_AUTH_ENABLED`, que vem `false`. Com a
+flag desligada, nenhuma rota do Google aparece na interface e o callback recusa tudo.
 
-Passos:
+O Google é **método secundário de login**, nunca de cadastro. A conta nasce só pelo vínculo
+com o Cotemig, que é o que prova que a pessoa é aluno. Depois de autenticada, ela associa a
+conta Google em `/conta` e passa a poder entrar pelos dois caminhos. Conta Google sem vínculo
+prévio não entra e não cria nada, e o Google nunca concede papel elevado.
 
-1. **Google Cloud Console** → criar projeto.
-2. **OAuth consent screen** → configurar (se o colégio tiver Google Workspace, use "Internal";
-   senão "External"). Publicar.
+Para ligar, é preciso ter um domínio público com HTTPS: o Google exige redirect URI `https`,
+com exceção de `localhost` em desenvolvimento.
+
+1. **Google Cloud Console**, criar projeto.
+2. **OAuth consent screen**. O colégio usa Google Workspace (confirmado pelos registros MX de
+   `cotemig.com.br`), então "Internal" é a opção correta.
 3. **Credentials → Create OAuth client ID → Web application.**
 4. **Authorized redirect URIs:**
-   - produção: `https://SEU_DOMINIO/api/auth/callback/google`
-   - dev: `http://localhost:3000/api/auth/callback/google`
-5. Copiar **Client ID** e **Client secret** para env vars:
+   - produção: `https://SEU_DOMINIO/api/auth/google/callback`
+   - dev: `http://localhost:3000/api/auth/google/callback`
+5. Preencher as variáveis de ambiente:
    ```
+   GOOGLE_AUTH_ENABLED=true
    GOOGLE_CLIENT_ID="..."
    GOOGLE_CLIENT_SECRET="..."
+   GOOGLE_REDIRECT_URI="https://SEU_DOMINIO/api/auth/google/callback"
+   GOOGLE_HD="cotemig.com.br"
    ```
-6. **Implementar o fluxo OAuth.** Duas opções:
-   - **Auth.js (NextAuth)**: adiciona 1 dependência mas resolve o OAuth. Configura o provider
-     Google e, no callback, chama `entrarComGoogle({ email, nome })` (nosso domínio) para
-     provisionar/vincular, reaproveitando as regras de unidade e de conta pendente.
-   - **Manual (sem dependência)**: uma rota `/api/auth/google` redireciona para o Google, e
-     `/api/auth/callback/google` troca o `code` por token, lê o perfil, chama `entrarComGoogle`
-     + `setSession`. Mais código, zero dependência.
-7. (Opcional) Restringir ao domínio do colégio: parâmetro `hd=cotemig.com.br` e validar o
-   email retornado no callback.
 
-> **Atenção à regra de unidade:** um login por Google normalmente traz um email que **não é
-> matrícula** → pela regra atual a conta cai como **pendente** e o admin libera em `/admin`.
-> Se os alunos entrarem com o email institucional `matricula@aluno.cotemig.com.br`, a regra de
-> matrícula (1=Barroca / 2=Floresta) já resolve automaticamente, sem passar por pendente.
+O que o fluxo faz, em `src/lib/google.ts` e nas rotas sob `src/app/api/auth/google/`:
+
+- Authorization Code com **PKCE S256**, `state` aleatório comparado em tempo constante e
+  `nonce` conferido dentro do ID token.
+- Recusa se `email_verified` não for exatamente `true`.
+- Manda `hd` na autorização **e revalida o domínio no servidor**, porque `hd` sozinho não é
+  garantia. Aceita `cotemig.com.br` e `aluno.cotemig.com.br`: como o segundo é alias do
+  primeiro no Workspace, a claim `hd` e o `email` podem voltar no domínio principal mesmo para
+  aluno. A lista é ajustável por `GOOGLE_DOMINIOS`.
+- Vínculo em modelo separado (`contas_externas`), com unique composto em
+  (`provider`, `providerAccountId`).
+- Os segredos ficam só no servidor, nunca em `NEXT_PUBLIC_*`.
+
+> A assinatura do ID token não é verificada contra o JWKS, de propósito: o token chega pela
+> troca server-to-server com o endpoint do Google, por TLS, e não passa pelo navegador. É a
+> dispensa prevista na especificação OIDC (3.1.3.7). Se algum dia o ID token passar a chegar
+> pelo cliente, essa verificação passa a ser obrigatória.
 
 ---
 
@@ -114,8 +126,12 @@ Passos:
 - [ ] (Opcional) **Tempo real**: a aprovação da compra usa _polling_ (stand a cada 2,5s,
       carteira a cada 4s). Funciona bem no evento; dá para trocar por SSE/websocket depois sem
       mexer no domínio.
-- [ ] (Opcional) **Integração com a API do colégio** (mencionada na Fase 1) para validar
-      matrículas/identidade contra o sistema da escola.
+- [ ] **Definir `PROXIES_CONFIAVEIS`** com o número de proxies à frente do app no host
+      escolhido. Sem isso o limite por IP fica desligado, porque `x-forwarded-for` é forjável.
+      O limite por identidade opera normalmente de qualquer jeito.
+- [ ] **Escolher o custo do scrypt.** O padrão `SCRYPT_N=131072` custa cerca de 128 MB e 300 ms
+      por verificação de senha. Num servidor modesto, com fila de login no pico do evento,
+      considere 65536. Mudar o valor não invalida senha nenhuma.
 - [ ] **Backups** do banco e um mínimo de monitoramento/logs.
 
 ---

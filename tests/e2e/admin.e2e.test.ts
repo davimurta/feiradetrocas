@@ -12,6 +12,7 @@ import {
 } from '@/app/actions/admin';
 import { criarPedidoAction, reportarAction } from '@/app/actions/venda';
 import { loginComSenhaAction } from '@/app/actions/auth';
+import { hashSenha } from '@/lib/password';
 import { describeDb } from '../helpers/db';
 import { criarUsuario, criarItem, criarAtendente } from '../helpers/factories';
 
@@ -56,7 +57,13 @@ describeDb('Admin via Server Actions', () => {
   it('stand reporta comprador; admin lista, bloqueia (login barrado) e zera saldo', async () => {
     const stand = await criarAtendente(Papel.atendente_stand, 'barroca');
     const admin = await criarUsuario({ papel: Papel.admin });
-    const comprador = await criarUsuario({ email: 'reportado@aluno.cotemig.com.br', saldo: 30, provider: 'password', senhaHash: null });
+    process.env.SCRYPT_N = '16384';
+    const comprador = await criarUsuario({
+      email: 'reportado@aluno.cotemig.com.br',
+      saldo: 30,
+      provider: 'password',
+      senhaHash: await hashSenha('minhasenha'),
+    });
     const item = await criarItem({ valor: 5, quantidade: 3 });
 
     // Stand cria o pedido e reporta o comprador.
@@ -80,10 +87,14 @@ describeDb('Admin via Server Actions', () => {
     const zerar = await ajustarSaldoAction({ id: comprador.id, novoSaldo: 0 });
     expect(zerar.ok && zerar.data.saldoAtual).toBe(0);
 
-    // Conta bloqueada não loga.
+    // Conta bloqueada não loga, mesmo com a senha certa.
     __setMockUserId(null);
-    const login = await loginComSenhaAction({ email: 'reportado@aluno.cotemig.com.br', senha: 'qualquer' });
+    const login = await loginComSenhaAction({ email: 'reportado@aluno.cotemig.com.br', senha: 'minhasenha' });
     expect(login).toMatchObject({ ok: false, error: { code: 'CONTA_BLOQUEADA' } });
+
+    // Senha errada não revela que a conta existe nem que está bloqueada.
+    const errada = await loginComSenhaAction({ email: 'reportado@aluno.cotemig.com.br', senha: 'chute' });
+    expect(errada).toMatchObject({ ok: false, error: { code: 'CREDENCIAL_INVALIDA' } });
   });
 
   it('não-admin é bloqueado (NAO_AUTORIZADO)', async () => {

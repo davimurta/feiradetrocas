@@ -40,7 +40,11 @@ describe('definirBloqueio (unitário, Prisma mockado)', () => {
     tx.user.update.mockResolvedValue({ id: 'u1', bloqueado: true });
     const res = await definirBloqueio(db, { userId: 'u1', bloqueado: true });
     expect(res).toEqual({ id: 'u1', bloqueado: true });
-    expect(tx.user.update).toHaveBeenCalledWith({ where: { id: 'u1' }, data: { bloqueado: true }, select: { id: true, bloqueado: true } });
+    expect(tx.user.update).toHaveBeenCalledWith({
+      where: { id: 'u1' },
+      data: { bloqueado: true, sessionVersion: { increment: 1 } },
+      select: { id: true, bloqueado: true },
+    });
   });
 
   it('usuário inexistente → ALUNO_INEXISTENTE', async () => {

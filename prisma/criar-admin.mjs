@@ -11,10 +11,16 @@ import { scryptSync, randomBytes } from 'node:crypto';
 
 const prisma = new PrismaClient();
 
-// Mesmo formato do src/lib/password.ts (scrypt, "salt:hash", keylen 64).
+// Mesmo formato do src/lib/password.ts: "scrypt$N$r$p$salt$hash", keylen 64.
+const N = Number(process.env.SCRYPT_N) || 131072;
+const R = 8;
+const P = 1;
+
 function hashSenha(senha) {
   const salt = randomBytes(16).toString('hex');
-  return `${salt}:${scryptSync(senha, salt, 64).toString('hex')}`;
+  const maxmem = 128 * N * R * 2 + 1024 * 1024;
+  const chave = scryptSync(senha, salt, 64, { N, r: R, p: P, maxmem }).toString('hex');
+  return `scrypt$${N}$${R}$${P}$${salt}$${chave}`;
 }
 
 const email = (process.argv[2] || process.env.ADMIN_EMAIL || '').trim().toLowerCase();
